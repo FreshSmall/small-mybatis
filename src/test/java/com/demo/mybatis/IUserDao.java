@@ -9,7 +9,6 @@ package com.demo.mybatis;
  */
 public interface IUserDao {
 
-    String queryUserName(String uId);
+    String queryUserInfoById(String uId);
 
-    Integer queryUserAge(String uId);
 }
