@@ -38,21 +38,4 @@ public class ApiTest {
             logger.info("测试结果：{}" + JSONUtil.toJsonStr(user));
         }
     }
-
-    @Test
-    public void test_pooled() throws SQLException, InterruptedException {
-        PooledDataSource pooledDataSource = new PooledDataSource();
-        pooledDataSource.setDriver("com.mysql.jdbc.Driver");
-        pooledDataSource.setUrl("jdbc:mysql://rm-2zenegn5xmw0id30j.mysql.rds.aliyuncs.com:3306/duke?useUnicode=true");
-        pooledDataSource.setUsername("duke_rw");
-        pooledDataSource.setPassword("Zu9FX4tCpcDAwynx2NG3bejU");
-        // 持续获得链接
-        while (true) {
-            Connection connection = pooledDataSource.getConnection();
-            System.out.println(connection);
-            Thread.sleep(1000);
-            // 注释掉/不注释掉测试
-            connection.close();
-        }
-    }
 }
