@@ -12,10 +12,9 @@ import java.util.Date;
 public class User {
 
     private Long id;
-    private String userId;          // 用户ID
-    private String userHead;        // 头像
-    private Date createTime;        // 创建时间
-    private Date updateTime;        // 更新时间
+    private String user_id;          // 用户ID
+    private String name;        // 姓名
+    private Date create_time;        // 创建时间
 
     public Long getId() {
         return id;
@@ -25,35 +24,27 @@ public class User {
         this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUser_id() {
+        return user_id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser_id(String user_id) {
+        this.user_id = user_id;
     }
 
-    public String getUserHead() {
-        return userHead;
+    public String getName() {
+        return name;
     }
 
-    public void setUserHead(String userHead) {
-        this.userHead = userHead;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Date getCreateTime() {
-        return createTime;
+    public Date getCreate_time() {
+        return create_time;
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+    public void setCreate_time(Date create_time) {
+        this.create_time = create_time;
     }
 }

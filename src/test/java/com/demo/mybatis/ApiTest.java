@@ -1,6 +1,10 @@
 package com.demo.mybatis;
 
-import cn.hutool.json.JSONUtil;
+import java.io.IOException;
+import java.io.Reader;
+
+import org.junit.Test;
+
 import com.demo.mybatis.builder.xml.XMLConfigBuilder;
 import com.demo.mybatis.io.Resources;
 import com.demo.mybatis.session.Configuration;
@@ -8,12 +12,8 @@ import com.demo.mybatis.session.SqlSession;
 import com.demo.mybatis.session.SqlSessionFactory;
 import com.demo.mybatis.session.SqlSessionFactoryBuilder;
 import com.demo.mybatis.session.defaults.DefaultSqlSession;
-import org.junit.Test;
 
-import java.io.IOException;
-import java.io.Reader;
-
-import static cn.hutool.http.ContentType.JSON;
+import cn.hutool.json.JSONUtil;
 
 public class ApiTest {
 
@@ -42,8 +42,8 @@ public class ApiTest {
         SqlSession sqlSession = new DefaultSqlSession(configuration);
 
         // 执行查询：默认是一个集合参数
-        Object[] req = {1L};
-        Object res = sqlSession.selectOne("cn.bugstack.mybatis.test.dao.IUserDao.queryUserInfoById", req);
+        Object[] req = {126L};
+        Object res = sqlSession.selectOne("com.demo.mybatis.IUserDao.queryUserInfoById", req);
         System.out.println("测试结果："+JSONUtil.toJsonStr(res));
     }
 }

@@ -1,8 +1,8 @@
 package com.demo.mybatis.mapping;
 
-import com.demo.mybatis.session.Configuration;
-
 import java.util.Map;
+
+import com.demo.mybatis.session.Configuration;
 
 /**
  * @author: yinchao
@@ -21,8 +21,9 @@ public class MappedStatement {
     private String resultType;
     private String sql;
     private Map<Integer, String> parameter;
-
+    private BoundSql boundSql;
     MappedStatement() {
+
         // constructor disabled
     }
 
@@ -106,4 +107,12 @@ public class MappedStatement {
     public void setParameter(Map<Integer, String> parameter) {
         this.parameter = parameter;
     }
+
+    public BoundSql getBoundSql() {
+        return boundSql;
+    }
+
+    public void setBoundSql(BoundSql boundSql) {
+        this.boundSql = boundSql;
+    }   
 }

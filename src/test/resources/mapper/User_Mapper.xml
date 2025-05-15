@@ -3,7 +3,7 @@
 <mapper namespace="com.demo.mybatis.IUserDao">
 
     <select id="queryUserInfoById" parameterType="java.lang.Long" resultType="com.demo.mybatis.User">
-        SELECT id, userId, userHead, createTime
+        SELECT id, user_id, name, create_time
         FROM user
         where id = #{id}
     </select>
