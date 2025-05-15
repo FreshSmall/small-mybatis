@@ -12,7 +12,7 @@ import java.util.Date;
 public class User {
 
     private Long id;
-    private String user_id;          // 用户ID
+    private Integer user_id;          // 用户ID
     private String name;        // 姓名
     private Date create_time;        // 创建时间
 
@@ -24,11 +24,11 @@ public class User {
         this.id = id;
     }
 
-    public String getUser_id() {
+    public Integer getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(String user_id) {
+    public void setUser_id(Integer user_id) {
         this.user_id = user_id;
     }
 

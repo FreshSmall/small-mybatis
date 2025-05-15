@@ -47,6 +47,8 @@ public class MappedStatement {
         public MappedStatement build() {
             assert mappedStatement.configuration != null;
             assert mappedStatement.id != null;
+            // Initialize BoundSql
+            mappedStatement.boundSql = new BoundSql(mappedStatement.sql, mappedStatement.parameter, mappedStatement.resultType, mappedStatement.parameterType);
             return mappedStatement;
         }
 
@@ -114,5 +116,5 @@ public class MappedStatement {
 
     public void setBoundSql(BoundSql boundSql) {
         this.boundSql = boundSql;
-    }   
+    }
 }
