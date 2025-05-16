@@ -57,6 +57,9 @@ public class SimpleExecutor implements Executor {
     @Override
     public void rollback(boolean required) throws SQLException {
         if (required && transaction.getConnection().getAutoCommit()) {
+
+
+
             transaction.getConnection().rollback();
         }
     }
