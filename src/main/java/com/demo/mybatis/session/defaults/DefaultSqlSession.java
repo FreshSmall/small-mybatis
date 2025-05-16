@@ -1,19 +1,12 @@
 package com.demo.mybatis.session.defaults;
 
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.demo.mybatis.mapping.BoundSql;
-import com.demo.mybatis.mapping.Environment;
+import com.demo.mybatis.executor.Executor;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.session.Configuration;
 import com.demo.mybatis.session.SqlSession;
 
-import javax.sql.DataSource;
 
 /**
  * @author: yinchao
@@ -25,9 +18,11 @@ import javax.sql.DataSource;
 public class DefaultSqlSession implements SqlSession {
 
     private Configuration configuration;
+    private Executor executor;
 
-    public DefaultSqlSession(Configuration configuration) {
+    public DefaultSqlSession(Configuration configuration, Executor executor) {
         this.configuration = configuration;
+        this.executor = executor;
     }
 
     @Override
@@ -37,38 +32,11 @@ public class DefaultSqlSession implements SqlSession {
 
     @Override
     public <T> T selectOne(String statement, Object parameter) {
-        try {
-            MappedStatement mappedStatement = configuration.getMappedStatement(statement);
-            Environment environment = configuration.getEnvironment();
-            Connection connection = environment.getDataSource().getConnection();
-            BoundSql boundSql = mappedStatement.getBoundSql();
-            PreparedStatement preparedStatement = connection.prepareStatement(boundSql.getSql());
-            preparedStatement.setLong(1, Long.parseLong(((Object[]) parameter)[0].toString()));
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<T> objList = resultSet2Obj(resultSet, Class.forName(boundSql.getResultType()));
-            return objList.get(0);
-        } catch (Exception e) {
-            throw new RuntimeException("selectOne error", e);
-        }
+        MappedStatement mappedStatement = configuration.getMappedStatement(statement);
+        List<T> result = executor.query(mappedStatement, parameter, Executor.NO_RESULT_HANDLER, mappedStatement.getBoundSql());
+        return result.get(0);
     }
 
-    private <T> List<T> resultSet2Obj(ResultSet resultSet, Class<?> type) {
-        try {
-            List<T> resultList = new ArrayList<>();
-            while (resultSet.next()) {
-                T result = (T) type.newInstance();
-                Field[] fields = type.getDeclaredFields();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    field.set(result, resultSet.getObject(field.getName()));
-                }
-                resultList.add(result);
-            }
-            return resultList;
-        } catch (Exception e) {
-            throw new RuntimeException("resultSet2Obj error", e);
-        }
-    }
 
     @Override
     public <T> T getMapper(Class<T> type) {
