@@ -1,11 +1,15 @@
 package com.demo.mybatis.datasource.unpooled;
 
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import com.demo.mybatis.datasource.DataSourceFactory;
+import com.demo.mybatis.datasource.pooled.PooledDataSource;
 import com.demo.mybatis.reflection.MetaObject;
+
+import cn.hutool.core.util.ReflectUtil;
 import com.demo.mybatis.reflection.SystemMetaObject;
 
 /**
@@ -33,7 +37,17 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
                 Object convertedValue = convertValue(metaObject, propertyName, value);
                 metaObject.setValue(propertyName, convertedValue);
             }
-        } 
+        }
+    }
+
+    public void customSetProperties(Properties props) {
+        DataSource dataSource1 = this.getDataSource();
+        for (Object key : props.keySet()) {
+            String propertyName = (String) key;
+            String methodName = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+            Method method = ReflectUtil.getMethodByName(dataSource1.getClass(), methodName);
+            ReflectUtil.invoke(dataSource1, method, props.get(propertyName));
+        }
     }
 
     @Override
