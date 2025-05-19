@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
+import cn.hutool.json.JSON;
 import com.demo.mybatis.datasource.pooled.PooledDataSource;
 import org.junit.Test;
 
@@ -33,9 +34,7 @@ public class ApiTest {
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
 
         // 3. 测试验证
-        for (int i = 0; i < 50; i++) {
-            User user = userDao.queryUserInfoById(126L);
-            logger.info("测试结果：{}" + JSONUtil.toJsonStr(user));
-        }
+        User user = userDao.queryUserInfoById(1L);
+        logger.info("测试结果：" + JSONUtil.toJsonStr(user));
     }
 }

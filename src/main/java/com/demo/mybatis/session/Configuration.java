@@ -1,7 +1,9 @@
 package com.demo.mybatis.session;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.demo.mybatis.binding.MapperRegistry;
 import com.demo.mybatis.datasource.druid.DruidDataSourceFactory;
@@ -16,9 +18,16 @@ import com.demo.mybatis.executor.statement.StatementHandler;
 import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.Environment;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.reflection.MetaObject;
+import com.demo.mybatis.reflection.factory.DefaultObjectFactory;
+import com.demo.mybatis.reflection.factory.ObjectFactory;
+import com.demo.mybatis.reflection.wrapper.DefaultObjectWrapperFactory;
+import com.demo.mybatis.reflection.wrapper.ObjectWrapperFactory;
+import com.demo.mybatis.scripting.LanguageDriverRegistry;
 import com.demo.mybatis.transaction.Transaction;
 import com.demo.mybatis.transaction.jdbc.JdbcTransactionFactory;
 import com.demo.mybatis.type.TypeAliasRegistry;
+import com.demo.mybatis.type.TypeHandlerRegistry;
 
 /**
  * @author: yinchao
@@ -40,6 +49,18 @@ public class Configuration {
 
     // 类型别名注册机
     protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+    protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
+    
+    // 类型处理器注册机
+    protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+
+    // 对象工厂和对象包装器工厂
+    protected ObjectFactory objectFactory = new DefaultObjectFactory();
+    protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
+
+    protected final Set<String> loadedResources = new HashSet<>();
+
+    protected String databaseId;
 
     public Configuration() {
         typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
@@ -83,7 +104,12 @@ public class Configuration {
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }
+
     
+    public TypeHandlerRegistry getTypeHandlerRegistry() {
+        return typeHandlerRegistry;
+    }
+
     /**
      * 创建结果集处理器
      */
@@ -104,4 +130,28 @@ public class Configuration {
     public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
         return new PreparedStatementHandler(executor, mappedStatement, parameter, resultHandler, boundSql);
     }
+
+    public MetaObject newMetaObject(Object parameterObject) {
+        return MetaObject.forObject(parameterObject, objectFactory, objectWrapperFactory);
+    }
+
+
+    public boolean isResourceLoaded(String resource) {
+        return loadedResources.contains(resource);
+    }
+
+    public void addLoadedResource(String resource) {
+        loadedResources.add(resource);
+    }
+
+    public LanguageDriverRegistry getLanguageRegistry() {
+        return languageRegistry;
+    }
+
+    public String getDatabaseId() {
+        return databaseId;
+    }
+
+    
+
 }
