@@ -1,5 +1,6 @@
 package com.demo.mybatis.builder.xml;
 
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +99,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
 
     private void mapperElement(Element mappers) throws Exception {
-        List<Element> mapperList = mappers.elements("mapper");
+        /*List<Element> mapperList = mappers.elements("mapper");
         for (Element e : mapperList) {
             String resource = e.attributeValue("resource");
             Reader reader = Resources.getResourceAsReader(resource);
@@ -130,20 +131,28 @@ public class XMLConfigBuilder extends BaseBuilder {
                 String msId = namespace + "." + id;
                 String nodeName = node.getName();
                 SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
-                
+
                 // 创建 SqlSource 对象
                 SqlSource sqlSource = new StaticSqlSource(configuration, sql);
-                
+
                 // 获取参数类型和结果类型的 Class 对象
-                Class<?> resultTypeClass = resultType != null ? Resources.classForName(resultType) : null; 
+                Class<?> resultTypeClass = resultType != null ? Resources.classForName(resultType) : null;
                 // 使用正确的构造函数创建 MappedStatement
                 MappedStatement mappedStatement = new MappedStatement.Builder(configuration, msId, sqlCommandType, sqlSource, resultTypeClass).build();
-                
+
                 // 添加解析 SQL
                 configuration.addMappedStatement(mappedStatement);
             }
             // 注册Mapper映射器
             configuration.addMapper(Resources.classForName(namespace));
+        }*/
+        List<Element> mapperList = mappers.elements("mapper");
+        for (Element e : mapperList) {
+            String resource = e.attributeValue("resource");
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+            // 在for循环里每个mapper都重新new一个XMLMapperBuilder，来解析
+            XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource);
+            mapperParser.parse();
         }
     }
 

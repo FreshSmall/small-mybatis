@@ -4,7 +4,7 @@ package com.demo.mybatis.executor.resultset;
  * @Author: yinchao
  * @Date: 2025-05-15 22:54:23
  * @LastEditors: yinchao
- * @LastEditTime: 2025-05-20 08:48:11
+ * @LastEditTime: 2025-05-20 09:19:02
  * @Description:
  */
 
@@ -40,7 +40,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         try {
             List<T> resultList = new ArrayList<>();
             while (resultSet.next()) {
-                T result = (T) clazz.newInstance();
+                T result = (T) clazz.getDeclaredConstructor().newInstance();
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
@@ -54,3 +54,4 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         }
     }
 }
+    

@@ -24,6 +24,7 @@ import com.demo.mybatis.reflection.factory.ObjectFactory;
 import com.demo.mybatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import com.demo.mybatis.reflection.wrapper.ObjectWrapperFactory;
 import com.demo.mybatis.scripting.LanguageDriverRegistry;
+import com.demo.mybatis.scripting.xmltags.XMLLanguageDriver;
 import com.demo.mybatis.transaction.Transaction;
 import com.demo.mybatis.transaction.jdbc.JdbcTransactionFactory;
 import com.demo.mybatis.type.TypeAliasRegistry;
@@ -67,6 +68,7 @@ public class Configuration {
         typeAliasRegistry.registerAlias("DRUID", DruidDataSourceFactory.class);
         typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
         typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
+        languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
     }
 
     public void addMappers(String packageName) {
