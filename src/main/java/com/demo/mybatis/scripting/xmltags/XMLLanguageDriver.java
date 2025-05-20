@@ -1,5 +1,9 @@
 package com.demo.mybatis.scripting.xmltags;
 
+import com.demo.mybatis.executor.parameter.ParameterHandler;
+import com.demo.mybatis.mapping.BoundSql;
+import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.scripting.defaults.DefaultParameterHandler;
 import org.dom4j.Element;
 
 import com.demo.mybatis.mapping.SqlSource;
@@ -21,5 +25,11 @@ public class XMLLanguageDriver implements LanguageDriver{
         XMLScriptBuilder builder = new XMLScriptBuilder(configuration, script, parameterType);
         return builder.parseScriptNode();
     }
-    
+
+    @Override
+    public ParameterHandler createParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+        return new DefaultParameterHandler(mappedStatement, parameterObject, boundSql);
+
+    }
+
 }

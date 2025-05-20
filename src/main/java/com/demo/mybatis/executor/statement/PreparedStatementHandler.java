@@ -1,5 +1,12 @@
 package com.demo.mybatis.executor.statement;
 
+/*
+ * @Author: yinchao
+ * @Date: 2025-05-15 22:59:47
+ * @LastEditors: yinchao
+ * @LastEditTime: 2025-05-20 22:39:55
+ * @Description: 
+ */
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -23,8 +30,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
 
     @Override
     public void parameterize(Statement statement) throws SQLException {
-        PreparedStatement ps = (PreparedStatement) statement;
-        ps.setLong(1, Long.parseLong(((Object[]) parameterObject)[0].toString()));
+        parameterHandler.setParameters((PreparedStatement) statement);
     }
 
     @Override

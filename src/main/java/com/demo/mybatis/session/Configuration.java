@@ -11,6 +11,7 @@ import com.demo.mybatis.datasource.pooled.PooledDataSourceFactory;
 import com.demo.mybatis.datasource.unpooled.UnpooledDataSourceFactory;
 import com.demo.mybatis.executor.Executor;
 import com.demo.mybatis.executor.SimpleExecutor;
+import com.demo.mybatis.executor.parameter.ParameterHandler;
 import com.demo.mybatis.executor.resultset.DefaultResultSetHandler;
 import com.demo.mybatis.executor.resultset.ResultSetHandler;
 import com.demo.mybatis.executor.statement.PreparedStatementHandler;
@@ -23,6 +24,7 @@ import com.demo.mybatis.reflection.factory.DefaultObjectFactory;
 import com.demo.mybatis.reflection.factory.ObjectFactory;
 import com.demo.mybatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import com.demo.mybatis.reflection.wrapper.ObjectWrapperFactory;
+import com.demo.mybatis.scripting.LanguageDriver;
 import com.demo.mybatis.scripting.LanguageDriverRegistry;
 import com.demo.mybatis.scripting.xmltags.XMLLanguageDriver;
 import com.demo.mybatis.transaction.Transaction;
@@ -154,6 +156,15 @@ public class Configuration {
         return databaseId;
     }
 
-    
 
+    public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+        // 创建参数处理器
+        ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+        // 插件的一些参数，也是在这里处理，暂时不添加这部分内容 interceptorChain.pluginAll(parameterHandler);
+        return parameterHandler;
+    }
+
+    public LanguageDriver getDefaultScriptingLanguageInstance() {
+        return languageRegistry.getDefaultDriver();
+    }
 }
