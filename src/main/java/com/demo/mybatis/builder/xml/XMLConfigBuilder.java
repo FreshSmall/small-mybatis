@@ -18,11 +18,13 @@ import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
 
 import com.demo.mybatis.builder.BaseBuilder;
+import com.demo.mybatis.builder.StaticSqlSource;
 import com.demo.mybatis.datasource.DataSourceFactory;
 import com.demo.mybatis.io.Resources;
 import com.demo.mybatis.mapping.Environment;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.mapping.SqlCommandType;
+import com.demo.mybatis.mapping.SqlSource;
 import com.demo.mybatis.session.Configuration;
 import com.demo.mybatis.transaction.TransactionFactory;
 
@@ -128,7 +130,15 @@ public class XMLConfigBuilder extends BaseBuilder {
                 String msId = namespace + "." + id;
                 String nodeName = node.getName();
                 SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
-                MappedStatement mappedStatement = new MappedStatement.Builder(configuration, msId, sqlCommandType, parameterType, resultType, sql, parameter).build();
+                
+                // 创建 SqlSource 对象
+                SqlSource sqlSource = new StaticSqlSource(configuration, sql);
+                
+                // 获取参数类型和结果类型的 Class 对象
+                Class<?> resultTypeClass = resultType != null ? Resources.classForName(resultType) : null; 
+                // 使用正确的构造函数创建 MappedStatement
+                MappedStatement mappedStatement = new MappedStatement.Builder(configuration, msId, sqlCommandType, sqlSource, resultTypeClass).build();
+                
                 // 添加解析 SQL
                 configuration.addMappedStatement(mappedStatement);
             }

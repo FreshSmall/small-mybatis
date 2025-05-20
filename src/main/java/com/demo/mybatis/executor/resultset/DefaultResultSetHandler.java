@@ -1,5 +1,13 @@
 package com.demo.mybatis.executor.resultset;
 
+/*
+ * @Author: yinchao
+ * @Date: 2025-05-15 22:54:23
+ * @LastEditors: yinchao
+ * @LastEditTime: 2025-05-20 08:48:11
+ * @Description:
+ */
+
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,12 +21,10 @@ import com.demo.mybatis.mapping.MappedStatement;
 
 public class DefaultResultSetHandler implements ResultSetHandler {
 
-    private final Executor executor;
     private final MappedStatement mappedStatement;
     private final BoundSql boundSql;
 
     public DefaultResultSetHandler(Executor executor, MappedStatement mappedStatement, BoundSql boundSql) {
-        this.executor = executor;
         this.mappedStatement = mappedStatement;
         this.boundSql = boundSql;
     }
@@ -27,12 +33,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     public <E> List<E> handleResultSets(Statement stmt) throws SQLException {
         // 获取结果集
         ResultSet rs = stmt.getResultSet();
-        try {
-            return result2Object(rs, Class.forName(boundSql.getResultType()));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return result2Object(rs, mappedStatement.getResultType());
     }
 
     private <T> List<T> result2Object(ResultSet resultSet, Class<?> clazz) {
