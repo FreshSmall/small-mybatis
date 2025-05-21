@@ -58,23 +58,66 @@ public class DefaultParameterHandler implements ParameterHandler {
             for (int i = 0; i < parameterMappings.size(); i++) {
                 ParameterMapping parameterMapping = parameterMappings.get(i);
                 String propertyName = parameterMapping.getProperty();
-                Object value;
-                if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                    value = parameterObject;
+                Object value = null;
+                if (parameterObject == null) {
+                    // 如果参数对象为null，直接使用null值
+                    value = null;
+                } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass()) && !propertyName.contains(".")) {
+                    // 如果参数是基本类型或者有对应的TypeHandler，并且属性名不包含点号（不是嵌套属性）
+                    // 但是要排除复杂对象
+                    if (parameterObject instanceof String ||
+                        parameterObject instanceof Integer ||
+                        parameterObject instanceof Long ||
+                        parameterObject instanceof Double ||
+                        parameterObject instanceof Float ||
+                        parameterObject instanceof Boolean ||
+                        parameterObject instanceof Byte ||
+                        parameterObject instanceof Short) {
+                        value = parameterObject;
+                    } else {
+                        // 复杂对象，通过反射获取属性值
+                        MetaObject metaObject = configuration.newMetaObject(parameterObject);
+                        value = metaObject.getValue(propertyName);
+                    }
                 } else {
                     // 通过 MetaObject.getValue 反射取得值设进去
                     MetaObject metaObject = configuration.newMetaObject(parameterObject);
                     value = metaObject.getValue(propertyName);
                 }
-                JdbcType jdbcType = parameterMapping.getJdbcType();
 
                 // 设置参数
                 System.out.println("根据每个ParameterMapping中的TypeHandler设置对应的参数信息 value：" + value);
-                TypeHandler typeHandler = parameterMapping.getTypeHandler();
-                if (typeHandler == null) {
-                    throw new RuntimeException("没有找到对应的TypeHandler，property:" + propertyName + " javaType:" + parameterMapping.getJavaType());
+
+                // 根据值的类型选择合适的TypeHandler
+                TypeHandler typeHandler;
+                if (value == null) {
+                    JdbcType jdbcType = parameterMapping.getJdbcType();
+                    typeHandler = parameterMapping.getTypeHandler();
+                    if (typeHandler == null) {
+                        typeHandler = typeHandlerRegistry.getTypeHandler(Object.class, jdbcType);
+                    }
+                    typeHandler.setParameter(ps, i + 1, null, jdbcType);
+                } else {
+                    // 根据值的类型获取TypeHandler
+                    typeHandler = typeHandlerRegistry.getTypeHandler(value.getClass());
+                    if (typeHandler == null) {
+                        // 如果没有找到对应的TypeHandler，使用基本类型的TypeHandler
+                        if (value instanceof Long) {
+                            typeHandler = typeHandlerRegistry.getTypeHandler(Long.class);
+                        } else if (value instanceof Integer) {
+                            typeHandler = typeHandlerRegistry.getTypeHandler(Integer.class);
+                        } else if (value instanceof String) {
+                            typeHandler = typeHandlerRegistry.getTypeHandler(String.class);
+                        } else {
+                            // 默认使用Object类型的TypeHandler
+                            typeHandler = typeHandlerRegistry.getTypeHandler(Object.class);
+                        }
+                    }
+                    if (typeHandler == null) {
+                        throw new RuntimeException("没有找到对应的TypeHandler，property:" + propertyName + " javaType:" + value.getClass().getName());
+                    }
+                    typeHandler.setParameter(ps, i + 1, value, null);
                 }
-                typeHandler.setParameter(ps, i + 1, value, jdbcType);
             }
         }
     }

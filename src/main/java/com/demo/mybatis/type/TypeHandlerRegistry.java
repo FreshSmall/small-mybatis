@@ -9,8 +9,8 @@ import java.util.Map;
  * @Author: yinchao
  * @Date: 2025-05-19 22:59:16
  * @LastEditors: yinchao
- * @LastEditTime: 2025-05-20 22:48:00
- * @Description:
+ * @LastEditTime: 2025-05-21 18:45:00
+ * @Description: 类型处理器注册表
  */
 public class TypeHandlerRegistry {
 
@@ -19,6 +19,7 @@ public class TypeHandlerRegistry {
     private final Map<Class<?>, TypeHandler<?>> ALL_TYPE_HANDLERS_MAP = new HashMap<>();
 
     public TypeHandlerRegistry() {
+        // 注册基本类型处理器
         register(Long.class, new LongTypeHandler());
         register(long.class, new LongTypeHandler());
 
@@ -28,6 +29,9 @@ public class TypeHandlerRegistry {
         register(String.class, new StringTypeHandler());
         register(String.class, JdbcType.CHAR, new StringTypeHandler());
         register(String.class, JdbcType.VARCHAR, new StringTypeHandler());
+
+        // 注册Object类型处理器，用于处理未知类型
+        register(Object.class, new ObjectTypeHandler());
     }
 
     private void register(Class<?> javaType, TypeHandler<?> handler) {
@@ -60,7 +64,17 @@ public class TypeHandlerRegistry {
                 handler = jdbcHandlerMap.get(null);
             }
         }
+
+        // 如果没有找到对应的处理器，尝试使用Object处理器
+        if (handler == null && type != Object.class) {
+            handler = getTypeHandler(Object.class, jdbcType);
+        }
+
         // type drives generics here
         return (TypeHandler<T>) handler;
+    }
+
+    public <T> TypeHandler<T> getTypeHandler(Class<T> type) {
+        return getTypeHandler((Type) type, null);
     }
 }

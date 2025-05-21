@@ -1,25 +1,30 @@
 package com.demo.mybatis.type;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /*
  * @Author: yinchao
  * @Date: 2025-05-20 22:42:17
  * @LastEditors: yinchao
- * @LastEditTime: 2025-05-20 22:42:18
- * @Description: 
+ * @LastEditTime: 2025-05-21 18:20:00
+ * @Description: 字符串类型处理器
  */
 public class StringTypeHandler extends BaseTypeHandler<String> {
 
     @Override
-    protected void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) {
-        try {
-            ps.setString(i, parameter);
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    protected void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter);
     }
-    
+
+    @Override
+    protected String getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        return rs.getString(columnName);
+    }
+
+    @Override
+    protected String getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        return rs.getString(columnIndex);
+    }
 }

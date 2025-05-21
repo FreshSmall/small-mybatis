@@ -4,14 +4,14 @@ package com.demo.mybatis.type;
  * @Author: yinchao
  * @Date: 2025-05-14 23:16:15
  * @LastEditors: yinchao
- * @LastEditTime: 2025-05-20 22:49:28
- * @Description: 
+ * @LastEditTime: 2025-05-21 18:40:00
+ * @Description: JDBC类型枚举
  */
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 public enum JdbcType {
-    diINTEGER(Types.INTEGER),
+    INTEGER(Types.INTEGER),
     FLOAT(Types.FLOAT),
     DOUBLE(Types.DOUBLE),
     DECIMAL(Types.DECIMAL),

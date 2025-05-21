@@ -4,12 +4,14 @@ package com.demo.mybatis.executor.resultset;
  * @Author: yinchao
  * @Date: 2025-05-15 22:54:23
  * @LastEditors: yinchao
- * @LastEditTime: 2025-05-20 09:19:02
- * @Description:
+ * @LastEditTime: 2025-05-21 18:35:00
+ * @Description: 默认结果集处理器
  */
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -18,13 +20,19 @@ import java.util.List;
 import com.demo.mybatis.executor.Executor;
 import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.reflection.MetaClass;
+import com.demo.mybatis.reflection.MetaObject;
+import com.demo.mybatis.session.Configuration;
+import com.demo.mybatis.type.TypeHandler;
 
 public class DefaultResultSetHandler implements ResultSetHandler {
 
+    private final Configuration configuration;
     private final MappedStatement mappedStatement;
     private final BoundSql boundSql;
 
     public DefaultResultSetHandler(Executor executor, MappedStatement mappedStatement, BoundSql boundSql) {
+        this.configuration = mappedStatement.getConfiguration();
         this.mappedStatement = mappedStatement;
         this.boundSql = boundSql;
     }
@@ -33,25 +41,104 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     public <E> List<E> handleResultSets(Statement stmt) throws SQLException {
         // 获取结果集
         ResultSet rs = stmt.getResultSet();
-        return result2Object(rs, mappedStatement.getResultType());
+        if (rs == null) {
+            return new ArrayList<>();
+        }
+
+        // 包装结果集
+        ResultSetWrapper rsw = new ResultSetWrapper(rs, configuration);
+
+        // 获取返回类型
+        Class<?> resultType = mappedStatement.getResultType();
+
+        // 处理结果集
+        return handleResultSet(rsw, resultType);
     }
 
-    private <T> List<T> result2Object(ResultSet resultSet, Class<?> clazz) {
+    private <E> List<E> handleResultSet(ResultSetWrapper rsw, Class<?> resultType) throws SQLException {
+        List<E> resultList = new ArrayList<>();
+        ResultSet rs = rsw.getResultSet();
+
+        // 处理基本类型
+        if (isPrimitiveOrWrapper(resultType)) {
+            return handlePrimitiveTypeResult(rsw, resultType);
+        }
+
+        // 处理对象类型
+        while (rs.next()) {
+            @SuppressWarnings("unchecked")
+            E rowObject = (E) handleRowValues(rsw, resultType);
+            resultList.add(rowObject);
+        }
+
+        return resultList;
+    }
+
+    private <T> T handleRowValues(ResultSetWrapper rsw, Class<T> resultType) throws SQLException {
         try {
-            List<T> resultList = new ArrayList<>();
-            while (resultSet.next()) {
-                T result = (T) clazz.getDeclaredConstructor().newInstance();
-                Field[] fields = clazz.getDeclaredFields();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    field.set(result, resultSet.getObject(field.getName()));
+            // 创建结果对象实例
+            T resultObject = resultType.getDeclaredConstructor().newInstance();
+
+            // 创建元对象，用于设置属性值
+            MetaObject metaObject = configuration.newMetaObject(resultObject);
+
+            // 获取结果集的列名
+            List<String> columnNames = rsw.getColumnNames();
+
+            // 遍历所有列，设置对应的属性值
+            for (String columnName : columnNames) {
+                // 尝试找到对应的属性名
+                String propertyName = columnName;
+
+                // 检查属性是否存在
+                if (metaObject.hasSetter(propertyName)) {
+                    Class<?> propertyType = metaObject.getSetterType(propertyName);
+
+                    // 获取对应类型的TypeHandler
+                    TypeHandler<?> typeHandler = rsw.getTypeHandler(propertyType, columnName);
+
+                    // 使用TypeHandler获取值并设置到对象中
+                    Object value = typeHandler.getResult(rsw.getResultSet(), columnName);
+                    if (value != null || !propertyType.isPrimitive()) {
+                        metaObject.setValue(propertyName, value);
+                    }
                 }
-                resultList.add(result);
             }
-            return resultList;
+
+            return resultObject;
         } catch (Exception e) {
-            throw new RuntimeException("resultSet2Obj error", e);
+            throw new RuntimeException("Error creating result object: " + e.getMessage(), e);
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private <E> List<E> handlePrimitiveTypeResult(ResultSetWrapper rsw, Class<?> resultType) throws SQLException {
+        List<E> result = new ArrayList<>();
+        ResultSet rs = rsw.getResultSet();
+
+        // 获取TypeHandler
+        TypeHandler<?> typeHandler = rsw.getTypeHandler(resultType, rsw.getColumnNames().get(0));
+
+        // 遍历结果集
+        while (rs.next()) {
+            // 使用TypeHandler获取值
+            Object value = typeHandler.getResult(rs, 1);
+            result.add((E) value);
+        }
+
+        return result;
+    }
+
+    private boolean isPrimitiveOrWrapper(Class<?> clazz) {
+        return clazz.isPrimitive() ||
+               clazz == Boolean.class ||
+               clazz == Byte.class ||
+               clazz == Character.class ||
+               clazz == Short.class ||
+               clazz == Integer.class ||
+               clazz == Long.class ||
+               clazz == Float.class ||
+               clazz == Double.class ||
+               clazz == String.class;
+    }
 }
-    
