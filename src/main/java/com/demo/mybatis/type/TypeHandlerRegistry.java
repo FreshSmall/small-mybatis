@@ -43,8 +43,12 @@ public class TypeHandlerRegistry {
         ALL_TYPE_HANDLERS_MAP.put(handler.getClass(), handler);
     }
 
-    public boolean hasTypeHandler(Class<?> parameterType) {
-        return ALL_TYPE_HANDLERS_MAP.containsKey(parameterType);
+    public boolean hasTypeHandler(Class<?> javaType) {
+        return hasTypeHandler(javaType, null);
+    }
+
+    public boolean hasTypeHandler(Class<?> javaType, JdbcType jdbcType) {
+        return javaType != null && getTypeHandler((Type) javaType, jdbcType) != null;
     }
 
     public <T> TypeHandler<T> getTypeHandler(Type type, JdbcType jdbcType) {
