@@ -9,10 +9,12 @@ import com.demo.mybatis.session.ResultHandler;
 import com.demo.mybatis.transaction.Transaction;
 
 public interface Executor {
-    
+
     ResultHandler NO_RESULT_HANDLER = null;
 
     <E> List<E> query(MappedStatement ms, Object parameter, ResultHandler resultHandler, BoundSql boundSql);
+
+    int update(MappedStatement ms, Object parameter) throws SQLException;
 
     Transaction getTransaction();
 

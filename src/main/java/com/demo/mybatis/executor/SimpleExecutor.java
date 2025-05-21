@@ -43,6 +43,23 @@ public class SimpleExecutor implements Executor {
     }
 
     @Override
+    public int update(MappedStatement ms, Object parameter) throws SQLException {
+        Statement stmt = null;
+        try {
+            Configuration configuration = ms.getConfiguration();
+            StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, Executor.NO_RESULT_HANDLER,
+                    ms.getSqlSource().getBoundSql(parameter));
+            stmt = handler.prepare(transaction.getConnection());
+            handler.parameterize(stmt);
+            return handler.update(stmt);
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+    }
+
+    @Override
     public Transaction getTransaction() {
         return transaction;
     }
@@ -57,9 +74,6 @@ public class SimpleExecutor implements Executor {
     @Override
     public void rollback(boolean required) throws SQLException {
         if (required && transaction.getConnection().getAutoCommit()) {
-
-
-
             transaction.getConnection().rollback();
         }
     }

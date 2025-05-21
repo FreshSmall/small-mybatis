@@ -8,7 +8,7 @@ import java.util.List;
 import com.demo.mybatis.session.ResultHandler;
 
 public interface StatementHandler {
-    
+
     /**
      * 准备语句
      */
@@ -23,6 +23,10 @@ public interface StatementHandler {
      * 执行查询
      */
     <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException;
-    
+
+    /**
+     * 执行更新
+     */
+    int update(Statement statement) throws SQLException;
 
 }

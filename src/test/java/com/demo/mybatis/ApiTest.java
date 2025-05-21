@@ -1,8 +1,10 @@
 package com.demo.mybatis;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,19 +35,79 @@ public class ApiTest {
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
         // 3. 测试验证
         User user = userDao.queryUserInfoById(126L);
-        logger.info("测试结果：" + JSONUtil.toJsonStr(user));
+        System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
     }
 
     @Test
-    public void test_queryUserInfo() throws IOException {
-        // 2. 获取映射器对象
+    public void test_insertUserInfo() {
+        // 1. 获取映射器对象
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
-        // 3. 测试验证
-        User userParam = new User();
-        userParam.setId(126L);
-        userParam.setUser_id(12228);
-        User user = userDao.queryUserInfo(userParam);
-        logger.info("测试结果：" + JSONUtil.toJsonStr(user));
+
+        // 2. 测试验证
+        User user = new User();
+        user.setUser_id(10002);
+        user.setName("小白");
+        userDao.insertUserInfo(user);
+        System.out.println("测试结果："+"Insert OK");
+
+        // 3. 提交事务
+        sqlSession.commit();
+    }
+
+    @Test
+    public void test_deleteUserInfoByUserId() {
+        // 1. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 2. 测试验证
+        int count = userDao.deleteUserInfoByUserId("10002");
+        System.out.println("测试结果：" + (count == 1));
+        // 3. 提交事务
+        sqlSession.commit();
+    }
+
+
+    @Test
+    public void test_updateUserInfo() {
+        // 1. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        User user = new User();
+        user.setId(126L);
+        user.setName("小白");
+        // 2. 测试验证
+        int count = userDao.updateUserInfo(user);
+        System.out.println("测试结果："+ count);
+        // 3. 提交事务
+        sqlSession.commit();
+    }
+
+    @Test
+    public void test_queryUserInfoById() {
+        // 1. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 2. 测试验证：基本参数
+        User user = userDao.queryUserInfoById(1L);
+        System.out.println("测试结果："+JSON.toJSONString(user));
+    }
+
+    @Test
+    public void test_queryUserInfo() {
+        // 1. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        User user = new User();
+        user.setUser_id(10002);
+        user.setName("小白");
+        // 2. 测试验证：对象参数
+        User userRes = userDao.queryUserInfo(user);
+        System.out.println("测试结果："+ JSON.toJSONString(userRes));
+    }
+
+    @Test
+    public void test_queryUserInfoList() {
+        // 1. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 2. 测试验证：对象参数
+        List<User> users = userDao.queryUserInfoList();
+        System.out.println("测试结果："+ JSON.toJSONString(users));
     }
 
 }

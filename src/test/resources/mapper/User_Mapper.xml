@@ -8,10 +8,31 @@
         where id = #{id}
     </select>
 
-<select id="queryUserInfo" parameterType="com.demo.mybatis.User" resultType="com.demo.mybatis.User">
-    SELECT id, user_id, name
-    FROM a_user
-    where id = #{id} and user_id = #{user_id}
-</select>
+    <select id="queryUserInfo" parameterType="com.demo.mybatis.User" resultType="com.demo.mybatis.User">
+        SELECT id, user_id, name
+        FROM a_user
+        where id = #{id} and user_id = #{user_id}
+    </select>
+
+    <select id="queryUserInfoList" resultType="com.demo.mybatis.User">
+        SELECT id, user_id,name
+        FROM a_user
+    </select>
+
+    <update id="updateUserInfo" parameterType="com.demo.mybatis.User">
+        UPDATE a_user
+        SET name = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertUserInfo" parameterType="com.demo.mybatis.User">
+        INSERT INTO a_user
+            (user_id, name createTime, updateTime)
+        VALUES (#{user_id}, #{name} , now(), now())
+    </insert>
+
+    <delete id="deleteUserInfoByUserId" parameterType="java.lang.String">
+        DELETE FROM a_user WHERE user_id = #{user_id}
+    </delete>
 
 </mapper>

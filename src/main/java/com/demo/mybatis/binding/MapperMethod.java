@@ -34,15 +34,24 @@ public class MapperMethod {
         Object result = null;
         switch (command.getType()) {
             case INSERT:
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = sqlSession.insert(command.getName(), param);
                 break;
             case DELETE:
+                param = method.convertArgsToSqlCommandParam(args);
+                result = sqlSession.delete(command.getName(), param);
                 break;
             case UPDATE:
+                param = method.convertArgsToSqlCommandParam(args);
+                result = sqlSession.update(command.getName(), param);
                 break;
             case SELECT:
-                // 修改这里，正确处理参数
-                Object param = method.convertArgsToSqlCommandParam(args);
-                result = sqlSession.selectOne(command.getName(), param);
+                param = method.convertArgsToSqlCommandParam(args);
+                if (method.returnsMany()) {
+                    result = sqlSession.selectList(command.getName(), param);
+                } else {
+                    result = sqlSession.selectOne(command.getName(), param);
+                }
                 break;
             default:
                 throw new RuntimeException("Unknown execution method for: " + command.getName());
@@ -79,9 +88,11 @@ public class MapperMethod {
     public static class MethodSignature {
 
         private final SortedMap<Integer, String> params;
+        private final Class<?> returnType;
 
         public MethodSignature(Configuration configuration, Method method) {
             this.params = Collections.unmodifiableSortedMap(getParams(method));
+            this.returnType = method.getReturnType();
         }
 
         public Object convertArgsToSqlCommandParam(Object[] args) {
@@ -113,6 +124,10 @@ public class MapperMethod {
                 }
                 return param;
             }
+        }
+
+        public boolean returnsMany() {
+            return java.util.Collection.class.isAssignableFrom(returnType) || returnType.isArray();
         }
 
         private SortedMap<Integer, String> getParams(Method method) {

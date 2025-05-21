@@ -33,6 +33,12 @@ public class SimpleStatementHandler extends BaseStatementHandler {
     }
 
     @Override
+    public int update(Statement statement) throws SQLException {
+        String sql = boundSql.getSql();
+        return statement.executeUpdate(sql);
+    }
+
+    @Override
     protected Statement instantiateStatement(Connection connection) throws SQLException {
         return connection.createStatement();
     }

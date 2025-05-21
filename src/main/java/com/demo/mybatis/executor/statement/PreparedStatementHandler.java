@@ -5,7 +5,7 @@ package com.demo.mybatis.executor.statement;
  * @Date: 2025-05-15 22:59:47
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-20 22:39:55
- * @Description: 
+ * @Description:
  */
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +38,13 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.execute();
         return resultSetHandler.handleResultSets(ps);
+    }
+
+    @Override
+    public int update(Statement statement) throws SQLException {
+        PreparedStatement ps = (PreparedStatement) statement;
+        ps.execute();
+        return ps.getUpdateCount();
     }
 
     @Override

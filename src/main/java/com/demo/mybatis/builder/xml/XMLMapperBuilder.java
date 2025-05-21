@@ -20,7 +20,7 @@ import com.demo.mybatis.session.Configuration;
  * @date: 2025/5/19 10:40
  */
 public class XMLMapperBuilder extends BaseBuilder {
-    
+
     private Element element;
     private String resource;
     private String currentNamespace;
@@ -64,6 +64,9 @@ public class XMLMapperBuilder extends BaseBuilder {
 
         // 2.配置select|insert|update|delete
         buildStatementFromContext(element.elements("select"));
+        buildStatementFromContext(element.elements("insert"));
+        buildStatementFromContext(element.elements("update"));
+        buildStatementFromContext(element.elements("delete"));
     }
 
     // 配置select|insert|update|delete
