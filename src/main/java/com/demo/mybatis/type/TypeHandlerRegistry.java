@@ -10,7 +10,7 @@ import java.util.Map;
  * @Date: 2025-05-19 22:59:16
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-20 22:48:00
- * @Description: 
+ * @Description:
  */
 public class TypeHandlerRegistry {
 
@@ -21,6 +21,9 @@ public class TypeHandlerRegistry {
     public TypeHandlerRegistry() {
         register(Long.class, new LongTypeHandler());
         register(long.class, new LongTypeHandler());
+
+        register(Integer.class, new IntegerTypeHandler());
+        register(int.class, new IntegerTypeHandler());
 
         register(String.class, new StringTypeHandler());
         register(String.class, JdbcType.CHAR, new StringTypeHandler());

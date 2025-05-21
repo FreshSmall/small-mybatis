@@ -5,7 +5,7 @@ package com.demo.mybatis.scripting.defaults;
  * @Date: 2025-05-19 22:48:57
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-20 22:55:44
- * @Description: 
+ * @Description:
  */
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ import com.demo.mybatis.type.TypeHandlerRegistry;
  * @Date: 2025-05-19 22:48:00
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-20 22:54:26
- * @Description: 
+ * @Description:
  */
 public class DefaultParameterHandler implements ParameterHandler {
 
@@ -71,6 +71,9 @@ public class DefaultParameterHandler implements ParameterHandler {
                 // 设置参数
                 System.out.println("根据每个ParameterMapping中的TypeHandler设置对应的参数信息 value：" + value);
                 TypeHandler typeHandler = parameterMapping.getTypeHandler();
+                if (typeHandler == null) {
+                    throw new RuntimeException("没有找到对应的TypeHandler，property:" + propertyName + " javaType:" + parameterMapping.getJavaType());
+                }
                 typeHandler.setParameter(ps, i + 1, value, jdbcType);
             }
         }

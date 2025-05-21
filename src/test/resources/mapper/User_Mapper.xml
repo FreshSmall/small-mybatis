@@ -11,7 +11,7 @@
 <select id="queryUserInfo" parameterType="com.demo.mybatis.User" resultType="com.demo.mybatis.User">
     SELECT id, user_id, name, create_time
     FROM a_user
-    where id = #{id}
+    where id = #{id} and user_id = #{user_id}
 </select>
 
 </mapper>

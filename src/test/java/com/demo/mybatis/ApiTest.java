@@ -43,6 +43,7 @@ public class ApiTest {
         // 3. 测试验证
         User userParam = new User();
         userParam.setId(126L);
+        userParam.setUser_id(12228);
         User user = userDao.queryUserInfo(userParam);
         logger.info("测试结果：" + JSONUtil.toJsonStr(user));
     }
