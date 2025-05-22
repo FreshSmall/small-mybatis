@@ -96,6 +96,13 @@ public class XMLMapperBuilder extends BaseBuilder {
 
         List<ResultMapping> resultMappings = new ArrayList<>();
 
+        // 解析 id 元素
+        List<Element> idChildren = resultMapNode.elements("id");
+        for (Element idChild : idChildren) {
+            ResultMapping resultMapping = buildResultMapping(idChild, typeClass);
+            resultMappings.add(resultMapping);
+        }
+
         // 解析 result 元素
         List<Element> resultChildren = resultMapNode.elements("result");
         for (Element resultChild : resultChildren) {
