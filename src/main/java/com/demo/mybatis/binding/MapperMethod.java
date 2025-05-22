@@ -40,14 +40,17 @@ public class MapperMethod {
             case INSERT:
                 Object param = method.convertArgsToSqlCommandParam(args);
                 result = sqlSession.insert(command.getName(), param);
+                sqlSession.commit();
                 break;
             case DELETE:
                 param = method.convertArgsToSqlCommandParam(args);
                 result = sqlSession.delete(command.getName(), param);
+                sqlSession.commit();
                 break;
             case UPDATE:
                 param = method.convertArgsToSqlCommandParam(args);
                 result = sqlSession.update(command.getName(), param);
+                sqlSession.commit();
                 break;
             case SELECT:
                 param = method.convertArgsToSqlCommandParam(args);

@@ -54,10 +54,10 @@ public class ApiTest {
         // 3. 测试验证
         User user = new User();
         user.setName("测试");
-        user.setUserId(1001);
-        user.setEmail("123456@qq.com");
-        userDao.insertUser(user);
-        System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
+        user.setUserId(1002);
+        user.setEmail("223456@qq.com");
+        int count = userDao.insertUser(user);
+        System.out.println("测试结果：" + JSONUtil.toJsonStr(user) + ",count=" + count);
     }
 
 }
