@@ -14,7 +14,7 @@ public class User {
     private Long id;
     private Integer userId;          // 用户ID
     private String name;        // 姓名
-    private Integer age;        // 年龄
+    private String email;        // 年龄
     private Date create_time;        // 创建时间
 
     public Long getId() {
@@ -41,12 +41,12 @@ public class User {
         this.name = name;
     }
 
-    public Integer getAge() {
-        return age;
+    public String getEmail() {
+        return email;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Date getCreate_time() {

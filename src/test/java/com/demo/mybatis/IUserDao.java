@@ -22,4 +22,7 @@ public interface IUserDao {
      */
     User queryUserInfoById(Long id);
 
+
+    User insertUser(User user);
+
 }

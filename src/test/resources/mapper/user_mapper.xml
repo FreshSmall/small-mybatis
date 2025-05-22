@@ -6,10 +6,16 @@
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
         <result column="name" property="name"/>
+        <result column="email" property="email"/>
     </resultMap>
 
     <select id="queryUserInfoById" parameterType="java.lang.Long" resultMap="userMap">
        select id, user_id, name from a_user where id = #{id}
     </select>
+
+    <insert id="insertUser" parameterType="com.demo.mybatis.User" useGeneratedKeys="true" keyProperty="id">
+        insert into a_user(user_id, name, email,create_time,update_time)
+        values (#{userId}, #{name}, #{email},now(),now())
+    </insert>
 
 </mapper>

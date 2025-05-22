@@ -14,8 +14,11 @@ import java.sql.Statement;
 import java.util.List;
 
 import com.demo.mybatis.executor.Executor;
+import com.demo.mybatis.executor.keygen.Jdbc3KeyGenerator;
+import com.demo.mybatis.executor.keygen.KeyGenerator;
 import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.mapping.SqlCommandType;
 import com.demo.mybatis.session.ResultHandler;
 
 /**
@@ -44,13 +47,27 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     public int update(Statement statement) throws SQLException {
         PreparedStatement ps = (PreparedStatement) statement;
         ps.execute();
-        return ps.getUpdateCount();
+        int rows = ps.getUpdateCount();
+
+        // 处理自增主键
+        if (mappedStatement.isUseGeneratedKeys() && mappedStatement.getSqlCommandType() == SqlCommandType.INSERT) {
+            KeyGenerator keyGenerator = new Jdbc3KeyGenerator();
+            keyGenerator.processGeneratedKeys(ps, parameterObject, mappedStatement);
+        }
+
+        return rows;
     }
 
     @Override
     protected Statement instantiateStatement(Connection connection) throws SQLException {
         String sql = boundSql.getSql();
-        return connection.prepareStatement(sql);
+
+        // 检查是否需要返回自增主键
+        if (mappedStatement.isUseGeneratedKeys() && mappedStatement.getSqlCommandType() == SqlCommandType.INSERT) {
+            return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else {
+            return connection.prepareStatement(sql);
+        }
     }
 
 }

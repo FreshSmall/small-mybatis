@@ -22,6 +22,10 @@ public class MappedStatement {
     private LanguageDriver lang;
     private String resultMap; // 新增 resultMap 属性
 
+    // 新增自增主键相关属性
+    private boolean useGeneratedKeys;
+    private String keyProperty;
+
 
     MappedStatement() {
         // constructor disabled
@@ -49,6 +53,18 @@ public class MappedStatement {
 
         public Builder resultMap(String resultMap) {
             mappedStatement.resultMap = resultMap;
+            return this;
+        }
+
+        // 新增方法：设置是否使用自增主键
+        public Builder useGeneratedKeys(boolean useGeneratedKeys) {
+            mappedStatement.useGeneratedKeys = useGeneratedKeys;
+            return this;
+        }
+
+        // 新增方法：设置自增主键对应的属性名
+        public Builder keyProperty(String keyProperty) {
+            mappedStatement.keyProperty = keyProperty;
             return this;
         }
 
@@ -82,5 +98,15 @@ public class MappedStatement {
 
     public String getResultMap() {
         return resultMap;
+    }
+
+    // 新增方法：获取是否使用自增主键
+    public boolean isUseGeneratedKeys() {
+        return useGeneratedKeys;
+    }
+
+    // 新增方法：获取自增主键对应的属性名
+    public String getKeyProperty() {
+        return keyProperty;
     }
 }

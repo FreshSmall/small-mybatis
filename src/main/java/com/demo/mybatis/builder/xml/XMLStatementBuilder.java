@@ -81,6 +81,21 @@ public class XMLStatementBuilder extends BaseBuilder {
             }
         }
 
+        // 解析自增主键相关属性（仅对INSERT语句有效）
+        if (SqlCommandType.INSERT.equals(sqlCommandType)) {
+            // 解析 useGeneratedKeys 属性
+            String useGeneratedKeys = element.attributeValue("useGeneratedKeys");
+            if (useGeneratedKeys != null) {
+                statementBuilder.useGeneratedKeys(Boolean.parseBoolean(useGeneratedKeys));
+            }
+
+            // 解析 keyProperty 属性
+            String keyProperty = element.attributeValue("keyProperty");
+            if (keyProperty != null) {
+                statementBuilder.keyProperty(keyProperty);
+            }
+        }
+
         MappedStatement mappedStatement = statementBuilder.build();
         // 添加解析 SQL
         configuration.addMappedStatement(mappedStatement);

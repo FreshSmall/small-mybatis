@@ -47,4 +47,17 @@ public class ApiTest {
         System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
     }
 
+    @Test
+    public void test_insert() throws IOException {
+        // 2. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 3. 测试验证
+        User user = new User();
+        user.setName("测试");
+        user.setUserId(1001);
+        user.setEmail("123456@qq.com");
+        userDao.insertUser(user);
+        System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
+    }
+
 }
