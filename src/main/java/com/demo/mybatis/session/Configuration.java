@@ -24,6 +24,7 @@ import com.demo.mybatis.reflection.factory.DefaultObjectFactory;
 import com.demo.mybatis.reflection.factory.ObjectFactory;
 import com.demo.mybatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import com.demo.mybatis.reflection.wrapper.ObjectWrapperFactory;
+import com.demo.mybatis.scripting.AnnotationLanguageDriver;
 import com.demo.mybatis.scripting.LanguageDriver;
 import com.demo.mybatis.scripting.LanguageDriverRegistry;
 import com.demo.mybatis.scripting.xmltags.XMLLanguageDriver;
@@ -53,7 +54,7 @@ public class Configuration {
     // 类型别名注册机
     protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
     protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
-    
+
     // 类型处理器注册机
     protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 
@@ -70,7 +71,12 @@ public class Configuration {
         typeAliasRegistry.registerAlias("DRUID", DruidDataSourceFactory.class);
         typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
         typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
+
+        // 注册 XML 语言驱动器
         languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
+
+        // 注册注解语言驱动器
+        languageRegistry.register(AnnotationLanguageDriver.class);
     }
 
     public void addMappers(String packageName) {
@@ -97,6 +103,10 @@ public class Configuration {
         return mappedStatements.get(id);
     }
 
+    public boolean hasStatement(String statementName) {
+        return mappedStatements.containsKey(statementName);
+    }
+
     public TypeAliasRegistry getTypeAliasRegistry() {
         return typeAliasRegistry;
     }
@@ -109,7 +119,7 @@ public class Configuration {
         this.environment = environment;
     }
 
-    
+
     public TypeHandlerRegistry getTypeHandlerRegistry() {
         return typeHandlerRegistry;
     }

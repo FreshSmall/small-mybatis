@@ -1,5 +1,7 @@
 package com.demo.mybatis;
 
+import com.demo.mybatis.annotations.Select;
+
 import java.util.List;
 
 /**
@@ -11,16 +13,7 @@ import java.util.List;
  */
 public interface IUserDao {
 
-    User queryUserInfoById(Long uId);
-
-    User queryUserInfo(User userParam);
-
+    @Select("SELECT id, user_id, name FROM a_user")
     List<User> queryUserInfoList();
-
-    int updateUserInfo(User req);
-
-    void insertUserInfo(User req);
-
-    int deleteUserInfoByUserId(String userId);
 
 }

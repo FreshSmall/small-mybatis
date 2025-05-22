@@ -1,6 +1,7 @@
 package com.demo.mybatis.binding;
 
 import cn.hutool.core.lang.ClassScanner;
+import com.demo.mybatis.builder.annotation.MapperAnnotationBuilder;
 import com.demo.mybatis.session.Configuration;
 import com.demo.mybatis.session.SqlSession;
 
@@ -50,7 +51,18 @@ public class MapperRegistry {
             }
             // 注册映射器代理工厂
             knownMappers.put(type, new MapperProxyFactory<>(type));
+
+            // 解析注解中的 SQL
+            parseAnnotations(type);
         }
+    }
+
+    /**
+     * 解析注解中的 SQL
+     */
+    private <T> void parseAnnotations(Class<T> type) {
+        MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
+        parser.parse();
     }
 
     public <T> boolean hasMapper(Class<T> type) {

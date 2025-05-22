@@ -15,7 +15,7 @@ import com.demo.mybatis.session.Configuration;
  * @Date: 2025-05-19 22:50:26
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-19 23:36:01
- * @Description: 
+ * @Description:
  */
 public class XMLLanguageDriver implements LanguageDriver{
 
@@ -27,9 +27,14 @@ public class XMLLanguageDriver implements LanguageDriver{
     }
 
     @Override
+    public SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType) {
+        // XML 语言驱动器不支持从字符串创建 SqlSource
+        throw new UnsupportedOperationException("XML language driver does not support creating SqlSource from String script");
+    }
+
+    @Override
     public ParameterHandler createParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
         return new DefaultParameterHandler(mappedStatement, parameterObject, boundSql);
-
     }
 
 }

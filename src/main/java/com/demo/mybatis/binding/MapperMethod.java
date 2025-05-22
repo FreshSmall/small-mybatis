@@ -1,5 +1,9 @@
 package com.demo.mybatis.binding;
 
+import com.demo.mybatis.annotations.Delete;
+import com.demo.mybatis.annotations.Insert;
+import com.demo.mybatis.annotations.Select;
+import com.demo.mybatis.annotations.Update;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.mapping.SqlCommandType;
 import com.demo.mybatis.session.Configuration;
@@ -69,9 +73,31 @@ public class MapperMethod {
 
         public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
             String statementName = mapperInterface.getName() + "." + method.getName();
-            MappedStatement ms = configuration.getMappedStatement(statementName);
-            name = ms.getId();
-            type = ms.getSqlCommandType();
+
+            // 检查配置中是否已经有这个语句
+            if (configuration.hasStatement(statementName)) {
+                MappedStatement ms = configuration.getMappedStatement(statementName);
+                name = ms.getId();
+                type = ms.getSqlCommandType();
+            } else {
+                // 检查方法上是否有 SQL 注解
+                if (method.isAnnotationPresent(Select.class)) {
+                    name = statementName;
+                    type = SqlCommandType.SELECT;
+                } else if (method.isAnnotationPresent(Insert.class)) {
+                    name = statementName;
+                    type = SqlCommandType.INSERT;
+                } else if (method.isAnnotationPresent(Update.class)) {
+                    name = statementName;
+                    type = SqlCommandType.UPDATE;
+                } else if (method.isAnnotationPresent(Delete.class)) {
+                    name = statementName;
+                    type = SqlCommandType.DELETE;
+                } else {
+                    name = statementName;
+                    type = SqlCommandType.UNKNOWN;
+                }
+            }
         }
 
         public String getName() {
@@ -134,8 +160,18 @@ public class MapperMethod {
             // 用一个TreeMap，这样就保证还是按参数的先后顺序
             final SortedMap<Integer, String> params = new TreeMap<Integer, String>();
             final Class<?>[] argTypes = method.getParameterTypes();
+            final java.lang.reflect.Parameter[] parameters = method.getParameters();
+
             for (int i = 0; i < argTypes.length; i++) {
-                String paramName = String.valueOf(argTypes[i]);
+                String paramName;
+
+                // 检查参数是否有 @Param 注解
+                if (parameters[i].isAnnotationPresent(com.demo.mybatis.annotations.Param.class)) {
+                    paramName = parameters[i].getAnnotation(com.demo.mybatis.annotations.Param.class).value();
+                } else {
+                    paramName = String.valueOf(argTypes[i]);
+                }
+
                 params.put(i, paramName);
             }
             return params;

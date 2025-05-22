@@ -99,60 +99,24 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
 
     private void mapperElement(Element mappers) throws Exception {
-        /*List<Element> mapperList = mappers.elements("mapper");
-        for (Element e : mapperList) {
-            String resource = e.attributeValue("resource");
-            Reader reader = Resources.getResourceAsReader(resource);
-            SAXReader saxReader = new SAXReader();
-            Document document = saxReader.read(new InputSource(reader));
-            Element root = document.getRootElement();
-            //命名空间
-            String namespace = root.attributeValue("namespace");
-
-            // SELECT
-            List<Element> selectNodes = root.elements("select");
-            for (Element node : selectNodes) {
-                String id = node.attributeValue("id");
-                String parameterType = node.attributeValue("parameterType");
-                String resultType = node.attributeValue("resultType");
-                String sql = node.getText();
-
-                // ? 匹配
-                Map<Integer, String> parameter = new HashMap<>();
-                Pattern pattern = Pattern.compile("(#\\{(.*?)})");
-                Matcher matcher = pattern.matcher(sql);
-                for (int i = 1; matcher.find(); i++) {
-                    String g1 = matcher.group(1);
-                    String g2 = matcher.group(2);
-                    parameter.put(i, g2);
-                    sql = sql.replace(g1, "?");
-                }
-
-                String msId = namespace + "." + id;
-                String nodeName = node.getName();
-                SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
-
-                // 创建 SqlSource 对象
-                SqlSource sqlSource = new StaticSqlSource(configuration, sql);
-
-                // 获取参数类型和结果类型的 Class 对象
-                Class<?> resultTypeClass = resultType != null ? Resources.classForName(resultType) : null;
-                // 使用正确的构造函数创建 MappedStatement
-                MappedStatement mappedStatement = new MappedStatement.Builder(configuration, msId, sqlCommandType, sqlSource, resultTypeClass).build();
-
-                // 添加解析 SQL
-                configuration.addMappedStatement(mappedStatement);
-            }
-            // 注册Mapper映射器
-            configuration.addMapper(Resources.classForName(namespace));
-        }*/
         List<Element> mapperList = mappers.elements("mapper");
         for (Element e : mapperList) {
             String resource = e.attributeValue("resource");
-            InputStream inputStream = Resources.getResourceAsStream(resource);
-            // 在for循环里每个mapper都重新new一个XMLMapperBuilder，来解析
-            XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource);
-            mapperParser.parse();
+            String mapperClass = e.attributeValue("class");
+
+            if (resource != null && mapperClass == null) {
+                // 使用 XML 配置
+                InputStream inputStream = Resources.getResourceAsStream(resource);
+                // 在for循环里每个mapper都重新new一个XMLMapperBuilder，来解析
+                XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource);
+                mapperParser.parse();
+            } else if (resource == null && mapperClass != null) {
+                // 使用注解配置
+                Class<?> mapperInterface = Resources.classForName(mapperClass);
+                configuration.addMapper(mapperInterface);
+            } else {
+                throw new RuntimeException("A mapper element must specify either a resource or a class, but not both.");
+            }
         }
     }
 
