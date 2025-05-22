@@ -66,23 +66,17 @@ public class SimpleExecutor implements Executor {
 
     @Override
     public void commit(boolean required) throws SQLException {
-        if (required && transaction.getConnection().getAutoCommit()) {
-            transaction.getConnection().commit();
-        }
+        transaction.commit();
     }
 
     @Override
     public void rollback(boolean required) throws SQLException {
-        if (required && transaction.getConnection().getAutoCommit()) {
-            transaction.getConnection().rollback();
-        }
+        transaction.rollback();
     }
 
     @Override
     public void close(boolean forceRollback) throws SQLException {
-        if (forceRollback && transaction.getConnection().getAutoCommit()) {
-            transaction.getConnection().close();
-        }
+        transaction.close();
     }
 
 }

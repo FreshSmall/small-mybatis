@@ -72,7 +72,7 @@ public class ApiTest {
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
         User user = new User();
         user.setId(126L);
-        user.setName("小白");
+        user.setName("小白111");
         // 2. 测试验证
         int count = userDao.updateUserInfo(user);
         System.out.println("测试结果："+ count);
