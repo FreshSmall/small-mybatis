@@ -19,6 +19,7 @@ import com.demo.mybatis.executor.statement.StatementHandler;
 import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.Environment;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.mapping.ResultMap;
 import com.demo.mybatis.reflection.MetaObject;
 import com.demo.mybatis.reflection.factory.DefaultObjectFactory;
 import com.demo.mybatis.reflection.factory.ObjectFactory;
@@ -50,6 +51,9 @@ public class Configuration {
 
     // 映射的语句，存在Map里
     protected final Map<String, MappedStatement> mappedStatements = new HashMap<>();
+
+    // 结果映射，存在Map里
+    protected final Map<String, ResultMap> resultMaps = new HashMap<>();
 
     // 类型别名注册机
     protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
@@ -105,6 +109,18 @@ public class Configuration {
 
     public boolean hasStatement(String statementName) {
         return mappedStatements.containsKey(statementName);
+    }
+
+    public void addResultMap(ResultMap resultMap) {
+        resultMaps.put(resultMap.getId(), resultMap);
+    }
+
+    public ResultMap getResultMap(String id) {
+        return resultMaps.get(id);
+    }
+
+    public boolean hasResultMap(String id) {
+        return resultMaps.containsKey(id);
     }
 
     public TypeAliasRegistry getTypeAliasRegistry() {

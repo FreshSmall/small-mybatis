@@ -16,10 +16,10 @@ import com.demo.mybatis.session.Configuration;
  * @Date: 2025-05-19 22:44:09
  * @LastEditors: yinchao
  * @LastEditTime: 2025-05-19 23:27:33
- * @Description: 
+ * @Description:
  */
 public class XMLStatementBuilder extends BaseBuilder {
-    
+
     private String currentNamespace;
     private Element element;
 
@@ -52,6 +52,8 @@ public class XMLStatementBuilder extends BaseBuilder {
         // 结果类型
         String resultType = element.attributeValue("resultType");
         Class<?> resultTypeClass = resolveAlias(resultType);
+        // 结果映射
+        String resultMap = element.attributeValue("resultMap");
         // 获取命令类型(select|insert|update|delete)
         String nodeName = element.getName();
         SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
@@ -62,9 +64,16 @@ public class XMLStatementBuilder extends BaseBuilder {
 
         SqlSource sqlSource = langDriver.createSqlSource(configuration, element, parameterTypeClass);
 
-        MappedStatement mappedStatement = new MappedStatement.Builder(configuration, currentNamespace + "." + id, sqlCommandType, sqlSource, resultTypeClass).build();
+        MappedStatement.Builder statementBuilder = new MappedStatement.Builder(configuration, currentNamespace + "." + id, sqlCommandType, sqlSource, resultTypeClass);
+
+        // 设置 resultMap
+        if (resultMap != null) {
+            statementBuilder.resultMap(resultMap);
+        }
+
+        MappedStatement mappedStatement = statementBuilder.build();
         // 添加解析 SQL
         configuration.addMappedStatement(mappedStatement);
     }
-    
+
 }

@@ -1,7 +1,9 @@
 package com.demo.mybatis.builder.xml;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -10,7 +12,10 @@ import org.dom4j.io.SAXReader;
 
 import com.demo.mybatis.builder.BaseBuilder;
 import com.demo.mybatis.io.Resources;
+import com.demo.mybatis.mapping.ResultMap;
+import com.demo.mybatis.mapping.ResultMapping;
 import com.demo.mybatis.session.Configuration;
+import com.demo.mybatis.type.JdbcType;
 
 /**
  * @author: yinchao
@@ -62,11 +67,91 @@ public class XMLMapperBuilder extends BaseBuilder {
             throw new RuntimeException("Mapper's namespace cannot be empty");
         }
 
-        // 2.配置select|insert|update|delete
+        // 2.配置resultMap
+        buildResultMapElements(element.elements("resultMap"));
+
+        // 3.配置select|insert|update|delete
         buildStatementFromContext(element.elements("select"));
         buildStatementFromContext(element.elements("insert"));
         buildStatementFromContext(element.elements("update"));
         buildStatementFromContext(element.elements("delete"));
+    }
+
+    // 配置resultMap
+    private void buildResultMapElements(List<Element> list) {
+        for (Element element : list) {
+            try {
+                resultMapElement(element);
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing resultMap element: " + e, e);
+            }
+        }
+    }
+
+    // 配置resultMap
+    private void resultMapElement(Element resultMapNode) throws Exception {
+        String id = resultMapNode.attributeValue("id");
+        String type = resultMapNode.attributeValue("type");
+        Class<?> typeClass = resolveAlias(type);
+
+        List<ResultMapping> resultMappings = new ArrayList<>();
+
+        // 解析 result 元素
+        List<Element> resultChildren = resultMapNode.elements("result");
+        for (Element resultChild : resultChildren) {
+            ResultMapping resultMapping = buildResultMapping(resultChild, typeClass);
+            resultMappings.add(resultMapping);
+        }
+
+        // 创建 ResultMap
+        String resultMapId = currentNamespace + "." + id;
+        ResultMap resultMap = new ResultMap.Builder(resultMapId, typeClass, resultMappings).build();
+        configuration.addResultMap(resultMap);
+    }
+
+    // 构建ResultMapping
+    private ResultMapping buildResultMapping(Element resultChild, Class<?> typeClass) {
+        String property = resultChild.attributeValue("property");
+        String column = resultChild.attributeValue("column");
+        String javaType = resultChild.attributeValue("javaType");
+        String jdbcType = resultChild.attributeValue("jdbcType");
+
+        Class<?> javaTypeClass = resolveClass(javaType);
+        JdbcType jdbcTypeEnum = resolveJdbcType(jdbcType);
+
+        ResultMapping.Builder builder = new ResultMapping.Builder(property, column);
+        if (javaTypeClass != null) {
+            builder.javaType(javaTypeClass);
+        }
+        if (jdbcTypeEnum != null) {
+            builder.jdbcType(jdbcTypeEnum);
+        }
+
+        return builder.build();
+    }
+
+    // 解析类
+    private Class<?> resolveClass(String alias) {
+        if (alias == null) {
+            return null;
+        }
+        try {
+            return resolveAlias(alias);
+        } catch (Exception e) {
+            throw new RuntimeException("Error resolving class. Cause: " + e, e);
+        }
+    }
+
+    // 解析JDBC类型
+    private JdbcType resolveJdbcType(String alias) {
+        if (alias == null) {
+            return null;
+        }
+        try {
+            return JdbcType.valueOf(alias.toUpperCase(Locale.ENGLISH));
+        } catch (Exception e) {
+            throw new RuntimeException("Error resolving JDBC type. Cause: " + e, e);
+        }
     }
 
     // 配置select|insert|update|delete

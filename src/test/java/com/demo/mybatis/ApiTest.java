@@ -28,11 +28,6 @@ public class ApiTest {
         sqlSession = sqlSessionFactory.openSession();
     }
 
-    public void initMock(){
-        Configuration configuration = new Configuration();
-        configuration.addMapper(IUserDao.class);
-        sqlSession = new MockSqlSession(configuration);
-    }
 
     @Test
     public void test_queryUserInfoList() throws IOException {

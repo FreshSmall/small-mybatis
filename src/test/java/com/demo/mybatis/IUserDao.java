@@ -16,4 +16,10 @@ public interface IUserDao {
     @Select("SELECT id, user_id, name FROM a_user")
     List<User> queryUserInfoList();
 
+    /**
+     * 根据 id 查询用户信息
+     * 使用 resultMap 进行字段映射
+     */
+    User queryUserInfoById(Long id);
+
 }

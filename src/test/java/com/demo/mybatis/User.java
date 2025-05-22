@@ -12,8 +12,9 @@ import java.util.Date;
 public class User {
 
     private Long id;
-    private Integer user_id;          // 用户ID
+    private Integer userId;          // 用户ID
     private String name;        // 姓名
+    private Integer age;        // 年龄
     private Date create_time;        // 创建时间
 
     public Long getId() {
@@ -24,12 +25,12 @@ public class User {
         this.id = id;
     }
 
-    public Integer getUser_id() {
-        return user_id;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser_id(Integer user_id) {
-        this.user_id = user_id;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -38,6 +39,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     public Date getCreate_time() {

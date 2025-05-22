@@ -16,10 +16,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.demo.mybatis.executor.Executor;
 import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.mapping.ResultMap;
+import com.demo.mybatis.mapping.ResultMapping;
 import com.demo.mybatis.reflection.MetaClass;
 import com.demo.mybatis.reflection.MetaObject;
 import com.demo.mybatis.session.Configuration;
@@ -51,6 +54,13 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         // 获取返回类型
         Class<?> resultType = mappedStatement.getResultType();
 
+        // 检查是否有 ResultMap
+        String resultMapId = mappedStatement.getResultMap();
+        ResultMap resultMap = null;
+        if (resultMapId != null) {
+            resultMap = configuration.getResultMap(resultMapId);
+        }
+
         // 检查返回类型是否为集合类型
         if (resultType == List.class || resultType == java.util.Collection.class) {
             // 如果是集合类型，则使用 Object.class 作为元素类型
@@ -58,10 +68,10 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         }
 
         // 处理结果集
-        return handleResultSet(rsw, resultType);
+        return handleResultSet(rsw, resultType, resultMap);
     }
 
-    private <E> List<E> handleResultSet(ResultSetWrapper rsw, Class<?> resultType) throws SQLException {
+    private <E> List<E> handleResultSet(ResultSetWrapper rsw, Class<?> resultType, ResultMap resultMap) throws SQLException {
         List<E> resultList = new ArrayList<>();
         ResultSet rs = rsw.getResultSet();
 
@@ -73,14 +83,18 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         // 处理对象类型
         while (rs.next()) {
             @SuppressWarnings("unchecked")
-            E rowObject = (E) handleRowValues(rsw, resultType);
+            E rowObject = (E) handleRowValues(rsw, resultType, resultMap);
             resultList.add(rowObject);
         }
 
         return resultList;
     }
 
-    private <T> T handleRowValues(ResultSetWrapper rsw, Class<T> resultType) throws SQLException {
+    private <E> List<E> handleResultSet(ResultSetWrapper rsw, Class<?> resultType) throws SQLException {
+        return handleResultSet(rsw, resultType, null);
+    }
+
+    private <T> T handleRowValues(ResultSetWrapper rsw, Class<T> resultType, ResultMap resultMap) throws SQLException {
         try {
             // 创建结果对象实例
             T resultObject = resultType.getDeclaredConstructor().newInstance();
@@ -88,32 +102,69 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             // 创建元对象，用于设置属性值
             MetaObject metaObject = configuration.newMetaObject(resultObject);
 
-            // 获取结果集的列名
-            List<String> columnNames = rsw.getColumnNames();
-
-            // 遍历所有列，设置对应的属性值
-            for (String columnName : columnNames) {
-                // 尝试找到对应的属性名
-                String propertyName = columnName;
-
-                // 检查属性是否存在
-                if (metaObject.hasSetter(propertyName)) {
-                    Class<?> propertyType = metaObject.getSetterType(propertyName);
-
-                    // 获取对应类型的TypeHandler
-                    TypeHandler<?> typeHandler = rsw.getTypeHandler(propertyType, columnName);
-
-                    // 使用TypeHandler获取值并设置到对象中
-                    Object value = typeHandler.getResult(rsw.getResultSet(), columnName);
-                    if (value != null || !propertyType.isPrimitive()) {
-                        metaObject.setValue(propertyName, value);
-                    }
-                }
+            if (resultMap != null) {
+                // 使用 ResultMap 进行映射
+                applyResultMap(rsw, resultMap, metaObject);
+            } else {
+                // 使用列名直接映射
+                applyColumnNames(rsw, metaObject);
             }
 
             return resultObject;
         } catch (Exception e) {
             throw new RuntimeException("Error creating result object: " + e.getMessage(), e);
+        }
+    }
+
+    private <T> T handleRowValues(ResultSetWrapper rsw, Class<T> resultType) throws SQLException {
+        return handleRowValues(rsw, resultType, null);
+    }
+
+    private void applyResultMap(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject) throws SQLException {
+        for (ResultMapping resultMapping : resultMap.getResultMappings()) {
+            String column = resultMapping.getColumn();
+            String property = resultMapping.getProperty();
+
+            if (rsw.getColumnNames().contains(column.toUpperCase(Locale.ENGLISH))) {
+                // 检查属性是否存在
+                if (metaObject.hasSetter(property)) {
+                    Class<?> propertyType = metaObject.getSetterType(property);
+
+                    // 获取对应类型的TypeHandler
+                    TypeHandler<?> typeHandler = rsw.getTypeHandler(propertyType, column);
+
+                    // 使用TypeHandler获取值并设置到对象中
+                    Object value = typeHandler.getResult(rsw.getResultSet(), column);
+                    if (value != null || !propertyType.isPrimitive()) {
+                        metaObject.setValue(property, value);
+                    }
+                }
+            }
+        }
+    }
+
+    private void applyColumnNames(ResultSetWrapper rsw, MetaObject metaObject) throws SQLException {
+        // 获取结果集的列名
+        List<String> columnNames = rsw.getColumnNames();
+
+        // 遍历所有列，设置对应的属性值
+        for (String columnName : columnNames) {
+            // 尝试找到对应的属性名
+            String propertyName = columnName;
+
+            // 检查属性是否存在
+            if (metaObject.hasSetter(propertyName)) {
+                Class<?> propertyType = metaObject.getSetterType(propertyName);
+
+                // 获取对应类型的TypeHandler
+                TypeHandler<?> typeHandler = rsw.getTypeHandler(propertyType, columnName);
+
+                // 使用TypeHandler获取值并设置到对象中
+                Object value = typeHandler.getResult(rsw.getResultSet(), columnName);
+                if (value != null || !propertyType.isPrimitive()) {
+                    metaObject.setValue(propertyName, value);
+                }
+            }
         }
     }
 

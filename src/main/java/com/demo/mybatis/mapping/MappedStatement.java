@@ -20,6 +20,7 @@ public class MappedStatement {
     private SqlSource sqlSource;
     Class<?> resultType;
     private LanguageDriver lang;
+    private String resultMap; // 新增 resultMap 属性
 
 
     MappedStatement() {
@@ -44,6 +45,11 @@ public class MappedStatement {
             mappedStatement.sqlSource = sqlSource;
             mappedStatement.resultType = resultType;
             mappedStatement.lang = configuration.getDefaultScriptingLanguageInstance();
+        }
+
+        public Builder resultMap(String resultMap) {
+            mappedStatement.resultMap = resultMap;
+            return this;
         }
 
         public MappedStatement build() {
@@ -72,5 +78,9 @@ public class MappedStatement {
 
     public Class<?> getResultType() {
         return resultType;
+    }
+
+    public String getResultMap() {
+        return resultMap;
     }
 }
