@@ -75,6 +75,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         List<E> resultList = new ArrayList<>();
         ResultSet rs = rsw.getResultSet();
 
+        // 如果resultType为null但有resultMap，使用resultMap中的类型
+        if (resultType == null && resultMap != null) {
+            resultType = resultMap.getType();
+        }
+
         // 处理基本类型
         if (isPrimitiveOrWrapper(resultType)) {
             return handlePrimitiveTypeResult(rsw, resultType);
@@ -96,6 +101,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
     private <T> T handleRowValues(ResultSetWrapper rsw, Class<T> resultType, ResultMap resultMap) throws SQLException {
         try {
+            // 如果resultType为null但有resultMap，使用resultMap中的类型
+            if (resultType == null && resultMap != null) {
+                resultType = (Class<T>) resultMap.getType();
+            }
+
+            // 确保resultType不为null
+            if (resultType == null) {
+                throw new RuntimeException("Result type cannot be null");
+            }
+
             // 创建结果对象实例
             T resultObject = resultType.getDeclaredConstructor().newInstance();
 
@@ -125,7 +140,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             String column = resultMapping.getColumn();
             String property = resultMapping.getProperty();
 
-            if (rsw.getColumnNames().contains(column.toUpperCase(Locale.ENGLISH))) {
+            boolean columnExists = rsw.getColumnNames().contains(column.toUpperCase(Locale.ENGLISH));
+
+            if (columnExists) {
                 // 检查属性是否存在
                 if (metaObject.hasSetter(property)) {
                     Class<?> propertyType = metaObject.getSetterType(property);
@@ -135,6 +152,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
                     // 使用TypeHandler获取值并设置到对象中
                     Object value = typeHandler.getResult(rsw.getResultSet(), column);
+
                     if (value != null || !propertyType.isPrimitive()) {
                         metaObject.setValue(property, value);
                     }
@@ -187,6 +205,10 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
 
     private boolean isPrimitiveOrWrapper(Class<?> clazz) {
+        // 防止空指针异常
+        if (clazz == null) {
+            return false;
+        }
         return clazz.isPrimitive() ||
                clazz == Boolean.class ||
                clazz == Byte.class ||

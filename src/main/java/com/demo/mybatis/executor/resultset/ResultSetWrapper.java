@@ -39,7 +39,9 @@ public class ResultSetWrapper {
         final ResultSetMetaData metaData = rs.getMetaData();
         final int columnCount = metaData.getColumnCount();
         for (int i = 1; i <= columnCount; i++) {
-            columnNames.add(metaData.getColumnLabel(i));
+            String columnLabel = metaData.getColumnLabel(i);
+            // 将列名转换为大写并存储，以便后续比较时不区分大小写
+            columnNames.add(columnLabel.toUpperCase(Locale.ENGLISH));
             jdbcTypes.add(JdbcType.forCode(metaData.getColumnType(i)));
             classNames.add(metaData.getColumnClassName(i));
         }
@@ -58,8 +60,10 @@ public class ResultSetWrapper {
     }
 
     public JdbcType getJdbcType(String columnName) {
+        // 将列名转换为大写，以便与存储的列名匹配
+        String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
         for (int i = 0; i < columnNames.size(); i++) {
-            if (columnNames.get(i).equalsIgnoreCase(columnName)) {
+            if (columnNames.get(i).equals(upperColumnName)) {
                 return jdbcTypes.get(i);
             }
         }
@@ -70,16 +74,19 @@ public class ResultSetWrapper {
      * 获取指定列的TypeHandler
      */
     public <T> TypeHandler<T> getTypeHandler(Class<T> propertyType, String columnName) {
+        // 将列名转换为大写，以便与存储的列名匹配
+        String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
+
         TypeHandler<T> handler = null;
-        Map<Class<?>, TypeHandler<?>> columnHandlers = typeHandlerMap.get(columnName);
+        Map<Class<?>, TypeHandler<?>> columnHandlers = typeHandlerMap.get(upperColumnName);
         if (columnHandlers == null) {
             columnHandlers = new HashMap<>();
-            typeHandlerMap.put(columnName, columnHandlers);
+            typeHandlerMap.put(upperColumnName, columnHandlers);
         } else {
             handler = (TypeHandler<T>) columnHandlers.get(propertyType);
         }
         if (handler == null) {
-            JdbcType jdbcType = getJdbcType(columnName);
+            JdbcType jdbcType = getJdbcType(upperColumnName);
             handler = (TypeHandler<T>) typeHandlerRegistry.getTypeHandler(propertyType, jdbcType);
             if (handler == null) {
                 handler = (TypeHandler<T>) typeHandlerRegistry.getTypeHandler(propertyType);
@@ -104,8 +111,10 @@ public class ResultSetWrapper {
      * 获取列的索引（不区分大小写）
      */
     public int getColumnIndex(String columnName) {
+        // 将列名转换为大写，以便与存储的列名匹配
+        String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
         for (int i = 0; i < columnNames.size(); i++) {
-            if (columnNames.get(i).equalsIgnoreCase(columnName)) {
+            if (columnNames.get(i).equals(upperColumnName)) {
                 return i + 1;
             }
         }

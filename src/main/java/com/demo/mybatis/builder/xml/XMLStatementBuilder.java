@@ -6,6 +6,7 @@ import org.dom4j.Element;
 
 import com.demo.mybatis.builder.BaseBuilder;
 import com.demo.mybatis.mapping.MappedStatement;
+import com.demo.mybatis.mapping.ResultMap;
 import com.demo.mybatis.mapping.SqlCommandType;
 import com.demo.mybatis.mapping.SqlSource;
 import com.demo.mybatis.scripting.LanguageDriver;
@@ -68,7 +69,16 @@ public class XMLStatementBuilder extends BaseBuilder {
 
         // 设置 resultMap
         if (resultMap != null) {
-            statementBuilder.resultMap(currentNamespace + "." + resultMap);
+            String fullResultMapId = currentNamespace + "." + resultMap;
+            statementBuilder.resultMap(fullResultMapId);
+
+            // 如果使用了resultMap，需要从resultMap中获取对应的类型
+            ResultMap rm = configuration.getResultMap(fullResultMapId);
+            if (rm != null) {
+                // 使用resultMap中的类型覆盖resultType
+                statementBuilder = new MappedStatement.Builder(configuration, currentNamespace + "." + id, sqlCommandType, sqlSource, rm.getType());
+                statementBuilder.resultMap(fullResultMapId);
+            }
         }
 
         MappedStatement mappedStatement = statementBuilder.build();
