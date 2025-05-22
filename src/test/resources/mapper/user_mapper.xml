@@ -2,18 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.demo.mybatis.IUserDao">
 
-    <select id="queryUserByCondition" parameterType="com.demo.mybatis.User" resultMap="userMap">
-        SELECT id, user_id, name, email FROM a_user where 1 = 1
-        <if test="name != null">
-            and name = #{name}
-        </if>
-        <if test="userId != null">
-            and user_id = #{userId}
-        </if>
-    </select>
-
     <select id="queryUserInfoById" parameterType="java.lang.Long" resultMap="userMap">
-        SELECT id, user_id, name, email FROM a_user where id = #{id}
+        SELECT id, user_id, name, email FROM a_user WHERE id = #{id}
     </select>
     
     <resultMap id="userMap" type="com.demo.mybatis.User">

@@ -26,6 +26,7 @@ import com.demo.mybatis.mapping.Environment;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.mapping.SqlCommandType;
 import com.demo.mybatis.mapping.SqlSource;
+import com.demo.mybatis.plugin.Interceptor;
 import com.demo.mybatis.session.Configuration;
 import com.demo.mybatis.transaction.TransactionFactory;
 
@@ -60,6 +61,8 @@ public class XMLConfigBuilder extends BaseBuilder {
      */
     public Configuration parse() {
         try {
+            // 解析插件
+            pluginElement(root.element("plugins"));
             // 解析环境
             environmentElement(root.element("environments"));
             // 解析映射器
@@ -98,6 +101,31 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
+    /**
+     * 解析插件标签
+     */
+    private void pluginElement(Element parent) throws Exception {
+        if (parent != null) {
+            for (Element child : parent.elements("plugin")) {
+                String interceptor = child.attributeValue("interceptor");
+                Properties properties = new Properties();
+                // 解析属性配置
+                for (Element property : child.elements("property")) {
+                    String name = property.attributeValue("name");
+                    String value = property.attributeValue("value");
+                    properties.setProperty(name, value);
+                }
+
+                // 实例化拦截器
+                Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
+                // 设置属性
+                interceptorInstance.setProperties(properties);
+                // 添加到配置中
+                configuration.addInterceptor(interceptorInstance);
+            }
+        }
+    }
+
     private void mapperElement(Element mappers) throws Exception {
         List<Element> mapperList = mappers.elements("mapper");
         for (Element e : mapperList) {
@@ -117,6 +145,20 @@ public class XMLConfigBuilder extends BaseBuilder {
             } else {
                 throw new RuntimeException("A mapper element must specify either a resource or a class, but not both.");
             }
+        }
+    }
+
+    /**
+     * 解析类
+     */
+    private Class<?> resolveClass(String alias) {
+        if (alias == null) {
+            return null;
+        }
+        try {
+            return resolveAlias(alias);
+        } catch (Exception e) {
+            throw new RuntimeException("Error resolving class. Cause: " + e, e);
         }
     }
 

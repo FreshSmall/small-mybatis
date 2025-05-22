@@ -20,6 +20,8 @@ import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.Environment;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.mapping.ResultMap;
+import com.demo.mybatis.plugin.Interceptor;
+import com.demo.mybatis.plugin.InterceptorChain;
 import com.demo.mybatis.reflection.MetaObject;
 import com.demo.mybatis.reflection.factory.DefaultObjectFactory;
 import com.demo.mybatis.reflection.factory.ObjectFactory;
@@ -70,6 +72,9 @@ public class Configuration {
 
     protected String databaseId;
 
+    // 插件拦截器链
+    protected final InterceptorChain interceptorChain = new InterceptorChain();
+
     public Configuration() {
         typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
         typeAliasRegistry.registerAlias("DRUID", DruidDataSourceFactory.class);
@@ -91,12 +96,12 @@ public class Configuration {
         mapperRegistry.addMapper(type);
     }
 
-    public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
-        return mapperRegistry.getMapper(type, sqlSession);
+    public <T> boolean hasMapper(Class<T> type) {
+        return mapperRegistry.hasMapper(type);
     }
 
-    public boolean hasMapper(Class<?> type) {
-        return mapperRegistry.hasMapper(type);
+    public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+        return mapperRegistry.getMapper(type, sqlSession);
     }
 
     public void addMappedStatement(MappedStatement ms) {
@@ -144,21 +149,27 @@ public class Configuration {
      * 创建结果集处理器
      */
     public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, BoundSql boundSql) {
-        return new DefaultResultSetHandler(executor, mappedStatement, boundSql);
+        ResultSetHandler resultSetHandler = new DefaultResultSetHandler(executor, mappedStatement, boundSql);
+        // 应用插件
+        return (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
     }
 
     /**
      * 生产执行器
      */
     public Executor newExecutor(Transaction transaction) {
-        return new SimpleExecutor(this, transaction);
+        Executor executor = new SimpleExecutor(this, transaction);
+        // 应用插件
+        return (Executor) interceptorChain.pluginAll(executor);
     }
 
     /**
      * 创建语句处理器
      */
     public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
-        return new PreparedStatementHandler(executor, mappedStatement, parameter, resultHandler, boundSql);
+        StatementHandler statementHandler = new PreparedStatementHandler(executor, mappedStatement, parameter, resultHandler, boundSql);
+        // 应用插件
+        return (StatementHandler) interceptorChain.pluginAll(statementHandler);
     }
 
     public MetaObject newMetaObject(Object parameterObject) {
@@ -182,12 +193,25 @@ public class Configuration {
         return databaseId;
     }
 
+    /**
+     * 添加拦截器
+     */
+    public void addInterceptor(Interceptor interceptor) {
+        interceptorChain.addInterceptor(interceptor);
+    }
+
+    /**
+     * 获取拦截器链
+     */
+    public InterceptorChain getInterceptorChain() {
+        return interceptorChain;
+    }
 
     public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
         // 创建参数处理器
         ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
-        // 插件的一些参数，也是在这里处理，暂时不添加这部分内容 interceptorChain.pluginAll(parameterHandler);
-        return parameterHandler;
+        // 应用插件
+        return (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
     }
 
     public LanguageDriver getDefaultScriptingLanguageInstance() {
