@@ -38,4 +38,13 @@ public class ApiTest {
         System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
     }
 
+    @Test
+    public void test_queryUserById() throws IOException {
+        // 2. 获取映射器对象
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 3. 测试验证
+        User user = userDao.queryUserInfoById(126L);
+        System.out.println("测试结果：" + JSONUtil.toJsonStr(user));
+    }
+
 }

@@ -68,7 +68,7 @@ public class XMLStatementBuilder extends BaseBuilder {
 
         // 设置 resultMap
         if (resultMap != null) {
-            statementBuilder.resultMap(resultMap);
+            statementBuilder.resultMap(currentNamespace + "." + resultMap);
         }
 
         MappedStatement mappedStatement = statementBuilder.build();
