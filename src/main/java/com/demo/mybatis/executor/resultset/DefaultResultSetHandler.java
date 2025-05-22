@@ -51,6 +51,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         // 获取返回类型
         Class<?> resultType = mappedStatement.getResultType();
 
+        // 检查返回类型是否为集合类型
+        if (resultType == List.class || resultType == java.util.Collection.class) {
+            // 如果是集合类型，则使用 Object.class 作为元素类型
+            resultType = Object.class;
+        }
+
         // 处理结果集
         return handleResultSet(rsw, resultType);
     }

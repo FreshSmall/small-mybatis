@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.List;
 
 import com.demo.mybatis.annotations.Delete;
 import com.demo.mybatis.annotations.Insert;
@@ -38,7 +39,7 @@ public class MapperAnnotationBuilder extends BaseBuilder {
      */
     public void parse() {
         String namespace = type.getName();
-        
+
         // Parse methods for SQL annotations
         Method[] methods = type.getMethods();
         for (Method method : methods) {
@@ -53,7 +54,7 @@ public class MapperAnnotationBuilder extends BaseBuilder {
         Class<?> returnType = getReturnType(method);
         String methodName = method.getName();
         String statementId = namespace + "." + methodName;
-        
+
         // Check for SQL annotations
         if (method.isAnnotationPresent(Select.class)) {
             parseSelectAnnotation(method, statementId, returnType);
@@ -70,11 +71,11 @@ public class MapperAnnotationBuilder extends BaseBuilder {
         Select selectAnnotation = method.getAnnotation(Select.class);
         String sql = selectAnnotation.value();
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, getParameterType(method));
-        
+
         // Create a MappedStatement for the SELECT annotation
         MappedStatement.Builder statementBuilder = new MappedStatement.Builder(
                 configuration, statementId, SqlCommandType.SELECT, sqlSource, returnType);
-        
+
         configuration.addMappedStatement(statementBuilder.build());
     }
 
@@ -82,11 +83,11 @@ public class MapperAnnotationBuilder extends BaseBuilder {
         Insert insertAnnotation = method.getAnnotation(Insert.class);
         String sql = insertAnnotation.value();
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, getParameterType(method));
-        
+
         // Create a MappedStatement for the INSERT annotation
         MappedStatement.Builder statementBuilder = new MappedStatement.Builder(
                 configuration, statementId, SqlCommandType.INSERT, sqlSource, returnType);
-        
+
         configuration.addMappedStatement(statementBuilder.build());
     }
 
@@ -94,11 +95,11 @@ public class MapperAnnotationBuilder extends BaseBuilder {
         Update updateAnnotation = method.getAnnotation(Update.class);
         String sql = updateAnnotation.value();
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, getParameterType(method));
-        
+
         // Create a MappedStatement for the UPDATE annotation
         MappedStatement.Builder statementBuilder = new MappedStatement.Builder(
                 configuration, statementId, SqlCommandType.UPDATE, sqlSource, returnType);
-        
+
         configuration.addMappedStatement(statementBuilder.build());
     }
 
@@ -106,11 +107,11 @@ public class MapperAnnotationBuilder extends BaseBuilder {
         Delete deleteAnnotation = method.getAnnotation(Delete.class);
         String sql = deleteAnnotation.value();
         SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, getParameterType(method));
-        
+
         // Create a MappedStatement for the DELETE annotation
         MappedStatement.Builder statementBuilder = new MappedStatement.Builder(
                 configuration, statementId, SqlCommandType.DELETE, sqlSource, returnType);
-        
+
         configuration.addMappedStatement(statementBuilder.build());
     }
 
@@ -134,7 +135,30 @@ public class MapperAnnotationBuilder extends BaseBuilder {
      */
     private Class<?> getReturnType(Method method) {
         Class<?> returnType = method.getReturnType();
+
         // For void methods, use Object.class
-        return returnType == void.class ? Object.class : returnType;
+        if (returnType == void.class) {
+            return Object.class;
+        }
+
+        // For collection types, get the generic type
+        if (returnType == List.class || returnType == java.util.Collection.class) {
+            // 尝试获取泛型类型
+            java.lang.reflect.Type genericReturnType = method.getGenericReturnType();
+            if (genericReturnType instanceof java.lang.reflect.ParameterizedType) {
+                java.lang.reflect.ParameterizedType paramType = (java.lang.reflect.ParameterizedType) genericReturnType;
+                java.lang.reflect.Type[] actualTypeArguments = paramType.getActualTypeArguments();
+                if (actualTypeArguments != null && actualTypeArguments.length > 0) {
+                    java.lang.reflect.Type actualType = actualTypeArguments[0];
+                    if (actualType instanceof Class) {
+                        return (Class<?>) actualType;
+                    }
+                }
+            }
+            // 如果无法获取泛型类型，则返回 Object.class
+            return Object.class;
+        }
+
+        return returnType;
     }
 }
