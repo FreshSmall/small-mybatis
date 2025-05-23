@@ -125,5 +125,23 @@ public interface SqlSession {
      */
     <T> T getMapper(Class<T> type);
 
+    /**
+     * 提交事务
+     */
     void commit();
+
+    /**
+     * 回滚事务
+     */
+    void rollback();
+
+    /**
+     * 关闭会话
+     */
+    void close();
+
+    /**
+     * 清理一级缓存
+     */
+    void clearCache();
 }

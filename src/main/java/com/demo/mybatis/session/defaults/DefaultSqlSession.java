@@ -20,10 +20,12 @@ public class DefaultSqlSession implements SqlSession {
 
     private Configuration configuration;
     private Executor executor;
+    private boolean closed;
 
     public DefaultSqlSession(Configuration configuration, Executor executor) {
         this.configuration = configuration;
         this.executor = executor;
+        this.closed = false;
     }
 
     @Override
@@ -105,7 +107,40 @@ public class DefaultSqlSession implements SqlSession {
     }
 
     @Override
+    public void rollback() {
+        try {
+            executor.rollback(true);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error rolling back transaction.  Cause: " + e);
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            executor.close(false);
+            closed = true;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error closing executor.  Cause: " + e);
+        }
+    }
+
+    @Override
+    public void clearCache() {
+        if (closed) {
+            throw new RuntimeException("SqlSession was closed.");
+        }
+        executor.clearLocalCache();
+    }
+
+    @Override
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    private void checkClosed() {
+        if (closed) {
+            throw new RuntimeException("SqlSession was closed.");
+        }
     }
 }

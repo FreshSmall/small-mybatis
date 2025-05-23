@@ -6,6 +6,10 @@
         SELECT id, user_id, name, email FROM a_user WHERE id = #{id}
     </select>
     
+    <update id="updateUserInfo" parameterType="com.demo.mybatis.User">
+        UPDATE a_user SET name = #{name}, email = #{email} WHERE id = #{id}
+    </update>
+    
     <resultMap id="userMap" type="com.demo.mybatis.User">
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>

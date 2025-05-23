@@ -9,20 +9,15 @@ import com.demo.mybatis.mapping.BoundSql;
 import com.demo.mybatis.mapping.MappedStatement;
 import com.demo.mybatis.session.Configuration;
 import com.demo.mybatis.session.ResultHandler;
-import com.demo.mybatis.transaction.Transaction;
 
-public class SimpleExecutor implements Executor {
+public class SimpleExecutor extends BaseExecutor {
 
-    private final Configuration configuration;
-    private final Transaction transaction;
-
-    public SimpleExecutor(Configuration configuration, Transaction transaction) {
-        this.configuration = configuration;
-        this.transaction = transaction;
+    public SimpleExecutor(Configuration configuration, com.demo.mybatis.transaction.Transaction transaction) {
+        super(configuration, transaction);
     }
 
     @Override
-    public <E> List<E> query(MappedStatement ms, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
+    protected <E> List<E> doQuery(MappedStatement ms, Object parameter, ResultHandler resultHandler, BoundSql boundSql) {
         try {
             Statement stmt = null;
             try {
@@ -43,7 +38,7 @@ public class SimpleExecutor implements Executor {
     }
 
     @Override
-    public int update(MappedStatement ms, Object parameter) throws SQLException {
+    protected int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
         Statement stmt = null;
         try {
             Configuration configuration = ms.getConfiguration();
@@ -58,25 +53,4 @@ public class SimpleExecutor implements Executor {
             }
         }
     }
-
-    @Override
-    public Transaction getTransaction() {
-        return transaction;
-    }
-
-    @Override
-    public void commit(boolean required) throws SQLException {
-        transaction.commit();
-    }
-
-    @Override
-    public void rollback(boolean required) throws SQLException {
-        transaction.rollback();
-    }
-
-    @Override
-    public void close(boolean forceRollback) throws SQLException {
-        transaction.close();
-    }
-
 }

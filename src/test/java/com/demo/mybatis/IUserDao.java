@@ -1,8 +1,8 @@
 package com.demo.mybatis;
 
-import com.demo.mybatis.annotations.Select;
-
 import java.util.List;
+
+import com.demo.mybatis.annotations.Select;
 
 /**
  * @author: yinchao
@@ -21,5 +21,10 @@ public interface IUserDao {
      * 使用 resultMap 进行字段映射
      */
     User queryUserInfoById(Long id);
+
+    /**
+     * 更新用户信息
+     */
+    int updateUserInfo(User user);
 
 }
