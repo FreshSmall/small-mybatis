@@ -2,6 +2,7 @@ package com.demo.mybatis.builder.xml;
 
 import java.util.Locale;
 
+import com.demo.mybatis.cache.Cache;
 import org.dom4j.Element;
 
 import com.demo.mybatis.builder.BaseBuilder;
@@ -93,6 +94,20 @@ public class XMLStatementBuilder extends BaseBuilder {
             String keyProperty = element.attributeValue("keyProperty");
             if (keyProperty != null) {
                 statementBuilder.keyProperty(keyProperty);
+            }
+        }
+
+        // 设置缓存相关属性
+        String namespace = element.getParent().attributeValue("namespace");
+
+        // 检查是否启用了全局缓存
+        if (configuration.isCacheEnabled()) {
+            // 获取命名空间对应的缓存
+            Cache cache = configuration.getCacheManager().getOrCreateCache(namespace);
+            if (cache != null) {
+                // 设置缓存启用状态和缓存实例
+                statementBuilder.cacheEnabled(true);
+                statementBuilder.cache(cache);
             }
         }
 

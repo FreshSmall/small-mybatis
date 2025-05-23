@@ -2,6 +2,7 @@ package com.demo.mybatis.mapping;
 
 import java.util.Map;
 
+import com.demo.mybatis.cache.Cache;
 import com.demo.mybatis.scripting.LanguageDriver;
 import com.demo.mybatis.session.Configuration;
 
@@ -25,6 +26,12 @@ public class MappedStatement {
     // 新增自增主键相关属性
     private boolean useGeneratedKeys;
     private String keyProperty;
+
+    // 新增：是否启用二级缓存
+    private boolean cacheEnabled = false;
+
+    // 新增：缓存配置
+    private Cache cache;
 
 
     MappedStatement() {
@@ -68,6 +75,18 @@ public class MappedStatement {
             return this;
         }
 
+        // 新增方法：设置是否启用二级缓存
+        public Builder cacheEnabled(boolean cacheEnabled) {
+            mappedStatement.cacheEnabled = cacheEnabled;
+            return this;
+        }
+
+        // 新增方法：设置缓存
+        public Builder cache(Cache cache) {
+            mappedStatement.cache = cache;
+            return this;
+        }
+
         public MappedStatement build() {
             assert mappedStatement.configuration != null;
             assert mappedStatement.id != null;
@@ -108,5 +127,15 @@ public class MappedStatement {
     // 新增方法：获取自增主键对应的属性名
     public String getKeyProperty() {
         return keyProperty;
+    }
+
+    // 新增方法：获取是否启用二级缓存
+    public boolean isCacheEnabled() {
+        return cacheEnabled;
+    }
+
+    // 新增方法：获取缓存
+    public Cache getCache() {
+        return cache;
     }
 }

@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.demo.mybatis.binding.MapperRegistry;
+import com.demo.mybatis.cache.CacheManager;
 import com.demo.mybatis.datasource.druid.DruidDataSourceFactory;
 import com.demo.mybatis.datasource.pooled.PooledDataSourceFactory;
 import com.demo.mybatis.datasource.unpooled.UnpooledDataSourceFactory;
+import com.demo.mybatis.executor.CachingExecutor;
 import com.demo.mybatis.executor.Executor;
 import com.demo.mybatis.executor.SimpleExecutor;
 import com.demo.mybatis.executor.parameter.ParameterHandler;
@@ -74,6 +76,12 @@ public class Configuration {
 
     // 插件拦截器链
     protected final InterceptorChain interceptorChain = new InterceptorChain();
+
+    // 新增：缓存管理器
+    protected final CacheManager cacheManager = new CacheManager();
+
+    // 新增：全局二级缓存开关
+    protected boolean cacheEnabled = true;
 
     public Configuration() {
         typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
@@ -159,6 +167,12 @@ public class Configuration {
      */
     public Executor newExecutor(Transaction transaction) {
         Executor executor = new SimpleExecutor(this, transaction);
+
+        // 如果启用了全局二级缓存，使用CachingExecutor装饰基础执行器
+        if (cacheEnabled) {
+            executor = new CachingExecutor(executor);
+        }
+
         // 应用插件
         return (Executor) interceptorChain.pluginAll(executor);
     }
@@ -205,6 +219,27 @@ public class Configuration {
      */
     public InterceptorChain getInterceptorChain() {
         return interceptorChain;
+    }
+
+    /**
+     * 获取缓存管理器
+     */
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    /**
+     * 判断是否启用全局二级缓存
+     */
+    public boolean isCacheEnabled() {
+        return cacheEnabled;
+    }
+
+    /**
+     * 设置是否启用全局二级缓存
+     */
+    public void setCacheEnabled(boolean cacheEnabled) {
+        this.cacheEnabled = cacheEnabled;
     }
 
     public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.demo.mybatis.cache.Cache;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -70,14 +71,40 @@ public class XMLMapperBuilder extends BaseBuilder {
             throw new RuntimeException("Mapper's namespace cannot be empty");
         }
 
-        // 2.配置resultMap
+        // 2.配置cache
+        cacheElement(element.element("cache"));
+
+        // 3.配置resultMap
         buildResultMapElements(element.elements("resultMap"));
 
-        // 3.配置select|insert|update|delete
+        // 4.配置select|insert|update|delete
         buildStatementFromContext(element.elements("select"));
         buildStatementFromContext(element.elements("insert"));
         buildStatementFromContext(element.elements("update"));
         buildStatementFromContext(element.elements("delete"));
+    }
+
+    /**
+     * 解析cache标签
+     */
+    private void cacheElement(Element cacheElement) {
+        if (cacheElement != null) {
+            // 获取缓存类型，默认为PERPETUAL
+            String type = cacheElement.attributeValue("type", "PERPETUAL");
+
+            // 创建缓存实例
+            Cache cache = configuration.getCacheManager().getOrCreateCache(currentNamespace);
+
+            // 设置缓存属性
+            String flushInterval = cacheElement.attributeValue("flushInterval");
+            String size = cacheElement.attributeValue("size");
+            String readOnly = cacheElement.attributeValue("readOnly");
+
+            // 这里可以根据属性配置缓存，但当前实现简单处理
+
+            // 将缓存与命名空间关联
+            configuration.getCacheManager().getOrCreateCache(currentNamespace);
+        }
     }
 
     // 配置resultMap
