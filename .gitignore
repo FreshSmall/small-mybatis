@@ -1,4 +1,5 @@
 mybatis-config-datasource.xml
+SpringIntegrationTest.java
 .mvn/
 HELP.md
 target/
