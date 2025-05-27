@@ -3,6 +3,7 @@ package com.demo.mybatis;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.demo.mybatis.dao.IUserDao;
 import org.junit.Before;
 import org.junit.Test;
 

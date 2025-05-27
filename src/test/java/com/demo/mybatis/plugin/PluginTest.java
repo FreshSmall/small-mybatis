@@ -1,12 +1,11 @@
 package com.demo.mybatis.plugin;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Test;
 
 import com.demo.mybatis.User;
-import com.demo.mybatis.IUserDao;
+import com.demo.mybatis.dao.IUserDao;
 import com.demo.mybatis.io.Resources;
 import com.demo.mybatis.session.SqlSession;
 import com.demo.mybatis.session.SqlSessionFactory;

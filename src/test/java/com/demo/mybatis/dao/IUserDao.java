@@ -1,7 +1,8 @@
-package com.demo.mybatis;
+package com.demo.mybatis.dao;
 
 import java.util.List;
 
+import com.demo.mybatis.User;
 import com.demo.mybatis.annotations.Select;
 
 /**
